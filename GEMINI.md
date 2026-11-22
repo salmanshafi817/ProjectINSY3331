@@ -1,87 +1,115 @@
-# Gatherly Team Guidelines & Rules
+# Gatherly Team Skill & Guidelines
 
 > **Tagline:** Better teams. Better events.  
-> **Mission:** Gatherly is an AI-powered event staffing copilot designed for student organizations to help club officers spend less time organizing volunteers and avoid problems like last-minute cancellations and understaffed events.
+> **Mission:** Gatherly is an AI-powered event staffing app made for student organizations to help club officers spend less time organizing volunteers and make sure their events have enough people to help.
 
 ---
 
-## 1. Target Audience & Users
-- Student organization event coordinators
-- Club presidents
-- Volunteer coordinators
-- Student volunteers
-*The app must be immediately intuitive even for first-time users.*
+## 1. About Our Project
+Gatherly solves core student organization staffing problems:
+- Not having enough volunteers for an event.
+- Volunteers canceling at the last minute.
+- Having trouble finding replacements.
+- Not knowing which positions still need people.
+- Spending too much time organizing schedules.
 
 ---
 
-## 2. Core Feature Requirements
-1. **Dashboard:** Upcoming events and live staffing status.
-2. **Event Management:** Create, edit, and organize events and roles.
-3. **Volunteer Profiles:** Track skills, interests, and availability.
-4. **AI Recommendations:** Intelligent matching of volunteers to positions based on skills/availability with explicit reasoning.
-5. **Staffing Alerts:** Proactive warnings for roles that still need volunteers.
-6. **Cancellation & Backup System:** Rapid replacement workflow for volunteer dropouts.
-7. **Event-Day Check-in:** Real-time volunteer check-in on event day.
-8. **Post-Event Reports:** Staffing outcome analytics and retrospective metrics.
+## 2. Target Users
+- Student organization event coordinators.
+- Club presidents.
+- Volunteer coordinators.
+- Student volunteers.
+*The app must be intuitive and easy to use without requiring extensive instructions.*
 
 ---
 
-## 3. Design System & Aesthetics
-Gatherly must look like a polished, modern product rather than a basic school project.
+## 3. Main Features
+1. **Dashboard:** Upcoming events, needed volunteers count, staffing progress, important alerts, and quick access.
+2. **Event Management:** Create/edit events, dates/times/locations, volunteer positions, assigned counts, and vacancy tracking.
+3. **Volunteer Profiles:** Qualifications, skills, availability schedules, and upcoming assignments.
+4. **AI Recommendations:** Skill- and availability-based matching, role sizing, understaffing detection, backup candidate replacement, and transparent explanations.
+5. **Alerts & Notifications:** Staffing shortage warnings, cancellation notices, and upcoming staffing problem alerts.
+6. **Backup Volunteers:** Finding and approving qualified replacements when someone cancels.
+7. **Event Check-In:** On-site arrival check-in and attendance tracking.
+8. **Reports:** Staffing outcomes, attendance analytics, cancellations, and retrospective metrics.
 
-- **Primary Palette:** Dark navy and eccentric blue.
-- **Backgrounds:** Crisp white backgrounds with light gray section contrast.
+---
+
+## 4. Design System & Aesthetics
+- **Primary Colors:** Dark navy and eccentric blue.
+- **Backgrounds:** Crisp white backgrounds with light gray sections.
 - **Typography:** High readability, clean visual hierarchy.
 - **UI Elements:** Rounded cards, modern buttons, interactive elements, consistent padding/margins.
-- **Status Color Code:**
+- **Status Colors:**
   - 🟢 **Green:** Completed staffing.
-  - 🟡 **Amber:** Staffing warnings / partial coverage.
-  - 🔴 **Red:** Urgent staffing shortages / critical gaps.
-- **Layout:** Persistent navigation sidebar, fully responsive layout (mobile & desktop).
-- **Aesthetic Rule:** Avoid cluttered layouts and unnecessary animations.
+  - 🟡 **Amber:** Staffing warnings.
+  - 🔴 **Red:** Urgent staffing problems.
+- **Layout:** Persistent navigation sidebar, responsive design for phones, tablets, and computers.
+- **Rule:** Avoid cluttered layouts, unnecessary animations, and excessive colors.
 
 ---
 
-## 4. AI Copilot Principles & Boundaries
-- **Capabilities:**
-  - Estimate volunteer requirements per role.
-  - Detect understaffed positions and alert organizers.
-  - Propose backup candidates when volunteers cancel.
-  - Recommend volunteers matching skills and schedules.
-  - Explain the reasoning behind every suggested match.
-- **Strict Guardrails:**
-  - Ground all recommendations in actual application data or clearly labeled sample data.
-  - Never invent volunteer availability or skills.
-  - Organizers must always be able to review, override, or edit AI suggestions.
-  - Never assume a volunteer accepted an assignment without explicit confirmation.
+## 5. AI Copilot Principles & Boundaries
+- AI recommendations must use actual application data or clearly labeled sample data.
+- Never make up volunteer skills or availability.
+- Never pretend a volunteer accepted an assignment when they have not.
+- Organizers must always be able to review, override, and edit AI recommendations.
+- The AI must explain when it does not have enough information.
+- AI-generated information must be reviewed before saving.
+- The AI assists human decision-making; it must NOT independently confirm assignments, cancel shifts, alter critical event details, or send messages without organizer approval.
 
 ---
 
-## 5. Development Guidelines
-1. **Inspect First:** Check existing project code and patterns before modifying anything.
-2. **Design Continuity:** Maintain established layout, color tokens, and structure.
-3. **Component Reuse:** Reuse existing components instead of duplicating code.
-4. **Functionality:** Every button, modal, form, and link must be functional.
-5. **Realistic Mock Data:** Use realistic sample data when backend/live data is unavailable.
-6. **Responsiveness:** Test on both desktop and mobile viewports.
-7. **Preserve Working Features:** Never regress or remove previously working features.
-8. **Code Cleanliness:** Keep code modular, well-commented, and readable for teammates.
+## 6. Security Rules
+- **Account Security:** Authentication required for private sections; passwords never stored in plain text; role-based access control.
+- **Protecting User Information:** Strict organization isolation (Club A cannot see Club B's data); no PII in logs/errors; minimal data collection.
+- **Protecting the Code:** No API keys or credentials in frontend code; use environment variables and `.env.example`; sanitize/validate all input against SQLi and XSS; secure database queries.
+- **Database Security:** Enforce row-level security (RLS) / organization-level authorization; validate all data server-side; prevent unauthorized cross-organization record modification.
+- **Third-Party Services:** Keep AI API keys on the backend; never send unnecessary private data to AI services; handle service outages gracefully.
 
 ---
 
-## 6. Pre-Commit / Iteration Testing Checklist
-Before concluding any build iteration, verify:
-- [ ] Does the application run without errors?
-- [ ] Does navigation between pages work smoothly?
-- [ ] Do all buttons and interactive elements perform their intended actions?
-- [ ] Can users create and manage events successfully?
-- [ ] Are staffing calculations and quotas accurate?
-- [ ] Can volunteers sign up for shifts?
-- [ ] Does the app prevent overlapping/conflicting assignments?
-- [ ] Are staffing status alerts (Green/Amber/Red) displayed accurately?
-- [ ] Does the UI render consistently across both desktop and mobile?
+## 7. Development Guidelines & Protecting Existing Work
+- **Inspect First:** Check existing files, components, and patterns before changing anything.
+- **Design Continuity:** Maintain established styling, color tokens, and structure.
+- **Component Reuse:** Reuse existing components instead of duplicating code.
+- **Protect Existing Work:** Do not remove working features, delete critical files, or rewrite large parts of the application unnecessarily.
+- **Database Safety:** Do not reset or delete database information without permission.
+- **Realistic Sample Data:** Use realistic sample data when live data is unavailable.
+- **Responsiveness:** Test on desktop, tablet, and mobile viewports.
 
 ---
 
-## 7. Team Rule
-Every team member and AI assistant working in this repository must adhere to this document and the `gatherly-team-skill` (`.agents/skills/gatherly-team-skill/SKILL.md`) so that Gatherly feels like one unified, cohesive application.
+## 8. Database and Staffing Rules
+- Prevent overlapping/conflicting shift assignments.
+- Check volunteer availability before confirming assignments.
+- Verify required skills for specialized roles.
+- Do not count canceled assignments as confirmed.
+- Staffing numbers and quotas must update immediately when assignments change.
+- Track distinct assignment statuses: `Recommended`, `Pending`, `Confirmed`, `Canceled`, `Completed`.
+- Handle concurrent assignment attempts gracefully.
+
+---
+
+## 9. Testing & Quality Assurance
+- **General Testing:** App runs, navigation functions, buttons/forms perform intended actions, quotas accurate, conflicts prevented.
+- **Security Testing:** Access control verified, tenant isolation maintained, secrets protected.
+- **AI Testing:** Real data used, no hallucinated attributes, transparent explanations provided, fail-safe operation.
+- **Rule:** Never claim something was tested successfully if it was not actually tested.
+
+---
+
+## 10. Deployment Rules
+- Verify environment variables, secrets protection, HTTPS, and production error handling before release.
+- Never deploy with known critical security vulnerabilities.
+
+---
+
+## 11. Final Summary Structure
+Every development turn must conclude with a concise summary stating:
+1. What was changed.
+2. Which files were updated.
+3. What was tested.
+4. Whether anything is still not working.
+5. Whether any security problems were found.
