@@ -351,6 +351,48 @@ const GatherlyStorage = {
     return { success: true };
   },
 
+  async applyStaffingPlan(eventId, assignments) {
+    if (await this.isServerAvailable()) {
+      try {
+        const res = await fetch("/api/copilot/apply-plan", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId, assignments })
+        });
+        const json = await res.json();
+        if (res.ok) return { success: true, message: json.message };
+        return { success: false, error: json.error || "Failed to commit staffing plan." };
+      } catch (e) {}
+    }
+
+    // LocalStorage fallback
+    const local = this.getLocalData();
+    const ev = local.events.find(e => e.id === eventId);
+    if (!ev) return { success: false, error: "Event not found" };
+
+    // Check for collisions across roles
+    const assignedAll = [];
+    for (const [rId, vIds] of Object.entries(assignments)) {
+      for (const vid of vIds) {
+        if (assignedAll.includes(vid)) {
+          const vol = (local.volunteers || []).find(v => v.id === vid);
+          return { success: false, error: `Collision: '${vol ? vol.name : vid}' cannot be assigned to multiple roles in the same event.` };
+        }
+        assignedAll.push(vid);
+      }
+    }
+
+    // Apply to roles
+    (ev.roles || []).forEach(role => {
+      if (assignments[role.id]) {
+        role.assignedVolunteerIds = Array.from(new Set(assignments[role.id]));
+      }
+    });
+
+    this.saveLocalData(local);
+    return { success: true, message: "Staffing plan applied to event roster successfully." };
+  },
+
   async resetData() {
     const clone = JSON.parse(JSON.stringify(GATHERLY_INITIAL_DATA));
     this.saveLocalData(clone);

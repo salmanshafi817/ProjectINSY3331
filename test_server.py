@@ -26,7 +26,7 @@ def run_tests():
     thread.start()
     time.sleep(0.5)
 
-    base_url = "http://localhost:8000"
+    base_url = "http://127.0.0.1:8000"
     passed = 0
     total = 0
 
@@ -165,6 +165,34 @@ def run_tests():
             req_unassign = urllib.request.Request(f"{base_url}/api/staffing/unassign", data=unassign_data, headers={"Content-Type": "application/json"}, method="POST")
             resp_un = urllib.request.urlopen(req_unassign)
             assert_test("POST /api/staffing/unassign removes volunteer", resp_un.status == 200)
+
+            # Test 11: POST /api/copilot/apply-plan (Apply AI Staffing Plan)
+            plan_data = json.dumps({
+                "eventId": new_event_id,
+                "assignments": {
+                    role_1["id"]: [new_vol_id],
+                    role_2["id"]: ["vol-101"]
+                }
+            }).encode("utf-8")
+            req_plan = urllib.request.Request(f"{base_url}/api/copilot/apply-plan", data=plan_data, headers={"Content-Type": "application/json"}, method="POST")
+            resp_plan = urllib.request.urlopen(req_plan)
+            plan_resp_json = json.loads(resp_plan.read().decode("utf-8"))
+            assert_test("POST /api/copilot/apply-plan commits plan", resp_plan.status == 200 and "event" in plan_resp_json)
+
+            # Test 12: Collision Prevention in AI Staffing Plan (Attempt double-booking volunteer in same plan)
+            bad_plan_data = json.dumps({
+                "eventId": new_event_id,
+                "assignments": {
+                    role_1["id"]: [new_vol_id],
+                    role_2["id"]: [new_vol_id]  # Duplicate in same event!
+                }
+            }).encode("utf-8")
+            req_bad_plan = urllib.request.Request(f"{base_url}/api/copilot/apply-plan", data=bad_plan_data, headers={"Content-Type": "application/json"}, method="POST")
+            try:
+                urllib.request.urlopen(req_bad_plan)
+                assert_test("Copilot Plan Rejects Duplicate Volunteer", False, "Expected 400 error but succeeded")
+            except urllib.error.HTTPError as he:
+                assert_test("Copilot Plan Rejects Duplicate Volunteer", he.code == 400, f"Blocked with HTTP {he.code}")
 
         except Exception as e:
             assert_test("Assignment & Collision Workflow", False, str(e))

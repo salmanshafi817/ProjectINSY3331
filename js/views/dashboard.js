@@ -38,9 +38,12 @@ const DashboardView = {
             Real-time volunteer coverage, open positions, and proactive staffing alerts for ${data.organization?.name || 'Student Organization'}.
           </p>
         </div>
-        <div style="display: flex; gap: 10px;">
+        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" onclick="AppRouter.navigate('copilot')">
+            <span>🤖</span> AI Copilot
+          </button>
           <button class="btn btn-secondary" onclick="AppRouter.navigate('staffing')">
-            <span>📋</span> View Staffing Board
+            <span>📋</span> Staffing Board
           </button>
           <button class="btn btn-primary" onclick="App.openCreateEventModal()">
             <span>➕</span> Create Event
@@ -174,9 +177,14 @@ const DashboardView = {
                           </span>
                         </td>
                         <td>
-                          <button class="btn btn-secondary btn-sm" onclick="App.goToEventStaffing('${ev.id}')">
-                            Manage Staffing
-                          </button>
+                          <div style="display: flex; gap: 6px;">
+                            <button class="btn btn-secondary btn-sm" onclick="App.goToEventStaffing('${ev.id}')">
+                              Staffing
+                            </button>
+                            <button class="btn btn-primary btn-sm" onclick="App.goToEventCopilot('${ev.id}')" title="Analyze with AI Copilot">
+                              🤖 Copilot
+                            </button>
+                          </div>
                         </td>
                       </tr>
                     `;

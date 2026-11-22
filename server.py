@@ -330,8 +330,43 @@ class GatherlyRequestHandler(http.server.SimpleHTTPRequestHandler):
                 return self.send_json(200, {"message": "Volunteer unassigned successfully"})
             else:
                 return self.send_json(400, {"error": "Volunteer was not assigned to this role."})
+
+        # 5. Apply AI Staffing Plan
+        elif path == "/api/copilot/apply-plan":
+            event_id = body.get("eventId")
+            plan_assignments = body.get("assignments", {})  # { roleId: [volunteerIds...] }
+            
+            event = next((e for e in data.get("events", []) if e.get("id") == event_id), None)
+            if not event:
+                return self.send_json(404, {"error": "Event not found."})
                 
-        # 5. Reset to Sample Data
+            # Verify no duplicate volunteers assigned across multiple roles in this event
+            assigned_all = []
+            for role_id, v_ids in plan_assignments.items():
+                for vid in v_ids:
+                    if vid in assigned_all:
+                        v_name = next((v.get("name") for v in data.get("volunteers", []) if v.get("id") == vid), vid)
+                        return self.send_json(400, {
+                            "error": f"Collision: Volunteer '{v_name}' cannot be assigned to multiple roles in the same event."
+                        })
+                    assigned_all.append(vid)
+
+            # Apply assignments to event roles
+            for role in event.get("roles", []):
+                r_id = role.get("id")
+                if r_id in plan_assignments:
+                    # Clean and preserve unique IDs up to role required capacity
+                    cleaned_ids = list(dict.fromkeys(plan_assignments[r_id]))
+                    role["assignedVolunteerIds"] = cleaned_ids
+
+            save_data(data)
+            return self.send_json(200, {
+                "message": "Staffing plan committed successfully",
+                "event": event,
+                "stats": calculate_stats(data)
+            })
+                
+        # 6. Reset to Sample Data
         elif path == "/api/reset":
             # Can re-read sample seed if desired
             return self.send_json(200, {"message": "Reset endpoint available"})

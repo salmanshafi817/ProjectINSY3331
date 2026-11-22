@@ -47,6 +47,13 @@ const App = {
     AppRouter.navigate("staffing");
   },
 
+  goToEventCopilot(eventId) {
+    CopilotView.selectedEventId = eventId;
+    CopilotView.draftPlan = null;
+    CopilotView.lastLoadedEventId = null;
+    AppRouter.navigate("copilot");
+  },
+
   toggleMobileSidebar() {
     const sidebar = document.getElementById("sidebar");
     const backdrop = document.getElementById("sidebar-backdrop");

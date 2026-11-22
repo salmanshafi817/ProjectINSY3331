@@ -63,6 +63,19 @@ If Python is not available, simply open `index.html` directly in any modern web 
 - **Assign Volunteer Workflow:** Suggests volunteers, prioritizes matching skills, and **blocks overlapping/conflicting assignments in the same event**.
 - **Unassign Volunteer:** One-click removal of volunteers from roles with instant recalculation of metrics.
 
+### 6. AI Staffing Copilot Engine (Iteration 2)
+- **Event-Specific Telemetry:** Select any student event to trigger real-time telemetry analysis of staffing requirements and volunteer availability.
+- **Suggested Volunteer Distribution by Role:** Attendance-based mathematical role sizing heuristics (e.g., 1 check-in per 75 attendees, 1 crowd marshall per 90 attendees) comparing configured quotas against optimal ratios.
+- **Staffing Gap & Skill Deficit Detection:** Detects open vacancies per role and verifies that assigned volunteers possess the required specialized skills (e.g. flagging missing A/V or Safety certifications).
+- **Identification of Overlapping / Conflicting Assignments:** Proactively audits the entire organization roster to flag:
+  - Same-event role collisions (preventing double-booking within the same event).
+  - Cross-event same-date collisions (flagging volunteers committed to another event on the same day).
+  - Schedule availability friction (e.g. weekend event vs weekday availability).
+  - Weekly workload limits (flagging volunteers exceeding `maxHoursPerWeek`).
+- **Staffing Risk Alerts (Green/Amber/Red):** Categorizes event risks into Critical Shortages (🔴), Partial Warnings (🟡), and Stable/Complete (🟢) with recommended remediation actions.
+- **Explanations for Recommendations (Transparent Grounding):** Ranks candidate volunteers using verified skills overlap, stated schedules, experience notes, and current workload. Provides explicit explanations grounded strictly in real profile attributes with zero hallucinations.
+- **Editable AI-Generated Staffing Plans:** Organizers can review the proposed staffing plan in an interactive matrix, swap candidates using dropdowns of ranked alternatives, add or remove slots, and commit the plan with one click via **"Apply Staffing Plan to Event"**, updating the database and UI instantly.
+
 ---
 
 ## 🎨 Design System

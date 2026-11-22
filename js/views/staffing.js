@@ -64,19 +64,24 @@ const StaffingView = {
           <p>📅 ${currentEvent.date} &bull; ⏰ ${currentEvent.time} &bull; 📍 ${currentEvent.location}</p>
         </div>
 
-        <div style="display: flex; align-items: center; gap: 12px;">
-          <label style="color: #CBD5E1; font-size: 0.85rem; font-weight: 500;">Switch Event:</label>
-          <select 
-            class="filter-select" 
-            style="background: var(--navy-800); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);"
-            onchange="StaffingView.selectEvent(this.value)"
-          >
-            ${events.map(ev => `
-              <option value="${ev.id}" ${ev.id === currentEvent.id ? 'selected' : ''}>
-                ${ev.title} (${ev.date})
-              </option>
-            `).join('')}
-          </select>
+        <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <button class="btn btn-primary" onclick="App.goToEventCopilot('${currentEvent.id}')" style="box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);">
+            <span>🤖</span> Analyze with AI Copilot
+          </button>
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <label style="color: #CBD5E1; font-size: 0.85rem; font-weight: 500;">Switch Event:</label>
+            <select 
+              class="filter-select" 
+              style="background: var(--navy-800); color: #FFFFFF; border-color: rgba(255, 255, 255, 0.2);"
+              onchange="StaffingView.selectEvent(this.value)"
+            >
+              ${events.map(ev => `
+                <option value="${ev.id}" ${ev.id === currentEvent.id ? 'selected' : ''}>
+                  ${ev.title} (${ev.date})
+                </option>
+              `).join('')}
+            </select>
+          </div>
         </div>
       </div>
 

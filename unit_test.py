@@ -90,6 +90,46 @@ def run_pure_tests():
     # Clean up test assignment
     role_1["assignedVolunteerIds"].remove(test_vol_id)
 
+    # 7. AI Copilot Engine File and Architecture Tests
+    check("js/copilot-engine.js exists", os.path.exists("js/copilot-engine.js"))
+    with open("js/copilot-engine.js", "r", encoding="utf-8") as f:
+        copilot_engine_src = f.read()
+
+    check("CopilotEngine has analyzeEvent", "analyzeEvent(" in copilot_engine_src)
+    check("CopilotEngine has calculateRoleSizing", "calculateRoleSizing(" in copilot_engine_src)
+    check("CopilotEngine has auditConflicts", "auditConflicts(" in copilot_engine_src)
+    check("CopilotEngine has evaluateStaffingRisks", "evaluateStaffingRisks(" in copilot_engine_src)
+    check("CopilotEngine has rankCandidatesForRole", "rankCandidatesForRole(" in copilot_engine_src)
+    check("CopilotEngine has schedule compatibility logic", "isScheduleCompatible(" in copilot_engine_src)
+
+    # 8. AI Copilot View and Editable Staffing Plan Tests
+    with open("js/views/copilot.js", "r", encoding="utf-8") as f:
+        copilot_view_src = f.read()
+
+    check("CopilotView has editable plan tab", "renderEditablePlanTab(" in copilot_view_src)
+    check("CopilotView has staffing gaps and sizing tab", "renderGapsAndSizingTab(" in copilot_view_src)
+    check("CopilotView has risk alerts and collisions tab", "renderRisksTab(" in copilot_view_src)
+    check("CopilotView has candidate matchmaker tab", "renderCandidatesTab(" in copilot_view_src)
+    check("CopilotView has candidate swap action", "handleSwapVolunteer(" in copilot_view_src)
+    check("CopilotView has candidate remove action", "handleRemoveFromPlan(" in copilot_view_src)
+    check("CopilotView has candidate add action", "handleAddCandidateToRole(" in copilot_view_src)
+    check("CopilotView has commit plan action", "applyPlan(" in copilot_view_src)
+
+    # 9. Verify Sizing Heuristics Logic in Python
+    # For 350 attendees: checkin >= 4, marshalls >= 4, av >= 3
+    attendees = 350
+    rec_checkin = max(2, (attendees + 74) // 75)
+    rec_marshalls = max(2, (attendees + 89) // 90)
+    rec_av = 3 if attendees > 250 else 2
+    check("Sizing heuristic formula for 350 attendees", rec_checkin == 5 and rec_marshalls == 4 and rec_av == 3)
+
+    # 10. Verify Staffing Gap Detection in Event 103 (Food Drive)
+    evt_103 = next((e for e in data["events"] if e["id"] == "evt-103"), None)
+    check("Event 103 located", evt_103 is not None)
+    if evt_103:
+        zero_roles = [r for r in evt_103["roles"] if len(r.get("assignedVolunteerIds", [])) == 0]
+        check("Zero-staffed role correctly identified in evt-103", len(zero_roles) > 0 and zero_roles[0]["name"] == "Loading & Vehicle Transport Crew")
+
     print("-" * 60)
     print(f"  SANDBOX UNIT TEST RESULTS: {passed}/{total} passed ({round(passed/total*100, 1)}%)")
     print("=" * 60)

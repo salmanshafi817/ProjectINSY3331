@@ -1258,3 +1258,158 @@ body {
     grid-template-columns: 1fr;
   }
 }
+
+/* ==========================================================================
+   AI STAFFING COPILOT SPECIFIC STYLES
+   ========================================================================== */
+.copilot-header-card {
+  background: linear-gradient(135deg, var(--navy-900), #1E293B);
+  color: #FFFFFF;
+  border-radius: var(--radius-xl);
+  padding: 28px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: var(--shadow-card);
+}
+
+.copilot-tab-bar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 24px;
+  border-bottom: 1px solid var(--border-subtle);
+  padding-bottom: 12px;
+  overflow-x: auto;
+}
+
+.copilot-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  border-radius: var(--radius-md);
+  background: var(--bg-surface);
+  color: var(--navy-700);
+  border: 1px solid var(--border-subtle);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+
+.copilot-tab-btn:hover {
+  background: var(--bg-subtle);
+  color: var(--navy-900);
+}
+
+.copilot-tab-btn.active {
+  background: var(--blue-600);
+  color: #FFFFFF;
+  border-color: var(--blue-600);
+  box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+}
+
+.match-score-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: var(--radius-full);
+}
+
+.match-score-pill.high {
+  background-color: var(--status-green-bg);
+  color: var(--status-green-text);
+  border: 1px solid var(--status-green-border);
+}
+
+.match-score-pill.medium {
+  background-color: var(--status-amber-bg);
+  color: var(--status-amber-text);
+  border: 1px solid var(--status-amber-border);
+}
+
+.match-score-pill.low {
+  background-color: var(--bg-subtle);
+  color: var(--text-muted);
+  border: 1px solid var(--border-subtle);
+}
+
+.reasoning-box {
+  background: var(--bg-subtle);
+  border-left: 3px solid var(--blue-500);
+  border-radius: 0 var(--radius-md) var(--radius-md) 0;
+  padding: 10px 14px;
+  font-size: 0.8rem;
+  color: var(--navy-800);
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.reasoning-bullet {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  line-height: 1.4;
+}
+
+.plan-role-block {
+  background: var(--bg-surface);
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  margin-bottom: 18px;
+  box-shadow: var(--shadow-card);
+}
+
+.plan-item-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  margin-bottom: 8px;
+  background: var(--bg-surface);
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.plan-item-row.proposed {
+  border-left: 4px solid var(--blue-500);
+  background: #F0F7FF;
+}
+
+.plan-item-row.existing {
+  border-left: 4px solid var(--status-green-solid);
+}
+
+.candidate-card {
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  background: var(--bg-surface);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.candidate-card:hover {
+  transform: translateY(-1px);
+  box-shadow: var(--shadow-hover);
+}
+
+.conflict-banner {
+  background: var(--status-red-bg);
+  border: 1px solid var(--status-red-border);
+  border-left: 4px solid var(--status-red-solid);
+  border-radius: var(--radius-md);
+  padding: 14px 18px;
+  margin-bottom: 14px;
+  color: var(--status-red-text);
+  font-size: 0.85rem;
+}
