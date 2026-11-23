@@ -1,11 +1,7 @@
 /**
  * Gatherly - Dashboard View
- * Displays:
- * 1. Upcoming events count & list
- * 2. Total registered volunteers
- * 3. Open staffing positions
- * 4. Staffing coverage percentage
- * 5. Recent staffing alerts (Urgent Red, Warning Amber, Complete Green)
+ * High-signal, clean, uncluttered operations center.
+ * Displays only key information so the user can easily scan and navigate.
  */
 
 const DashboardView = {
@@ -14,9 +10,8 @@ const DashboardView = {
     const stats = data.stats || {};
     const alerts = data.alerts || [];
     const events = data.events || [];
-    const volunteers = data.volunteers || [];
 
-    // Coverage color classification
+    // Coverage status color
     let coverageBadgeClass = "badge-red";
     let progressColorClass = "red";
     if (stats.coveragePercentage >= 85) {
@@ -29,32 +24,27 @@ const DashboardView = {
 
     const upcomingEvents = events.filter(e => e.status === "Upcoming").slice(0, 4);
 
+    // Filter to top priority alerts (prioritize urgent, limit to 3 for clean scannability)
+    const urgentAlerts = alerts.filter(a => a.severity === "urgent" || a.level === "URGENT" || a.level === "CRITICAL");
+    const displayAlerts = (urgentAlerts.length > 0 ? urgentAlerts : alerts).slice(0, 3);
+
     return `
-      <!-- TOP OVERVIEW HEADER -->
-      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
+      <!-- CLEAN VIEW HEADER -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 12px;">
         <div>
-          <h2 style="font-size: 1.5rem; font-weight: 800; color: var(--navy-900); letter-spacing: -0.5px;">Operations Overview</h2>
-          <p style="font-size: 0.875rem; color: var(--text-muted);">
-            Real-time volunteer coverage, open positions, and proactive staffing alerts for ${data.organization?.name || 'Student Organization'}.
+          <h2 style="font-size: 1.4rem; font-weight: 800; color: var(--navy-900); letter-spacing: -0.3px;">Dashboard</h2>
+          <p style="font-size: 0.825rem; color: var(--text-muted); margin-top: 2px;">
+            ${data.organization?.name || 'Student Organization'} &bull; ${data.organization?.term || 'Current Term'}
           </p>
         </div>
-        <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button class="btn btn-secondary" style="border-color: rgba(239, 68, 68, 0.4); color: var(--status-red-solid);" onclick="AppRouter.navigate('operations')">
-            <span>🚨</span> Live Operations
-          </button>
-          <button class="btn btn-secondary" onclick="AppRouter.navigate('copilot')">
-            <span>🤖</span> AI Copilot
-          </button>
-          <button class="btn btn-secondary" onclick="AppRouter.navigate('staffing')">
-            <span>📋</span> Staffing Board
-          </button>
+        <div style="display: flex; gap: 10px;">
           <button class="btn btn-primary" onclick="App.openCreateEventModal()">
-            <span>➕</span> Create Event
+            <span>➕</span> New Event
           </button>
         </div>
       </div>
 
-      <!-- 4 MAIN METRIC STAT CARDS -->
+      <!-- 4 KEY STAT CARDS (CLEAN & MINIMAL) -->
       <div class="stats-grid">
         <!-- Upcoming Events -->
         <div class="stat-card">
@@ -63,21 +53,17 @@ const DashboardView = {
             <div class="stat-icon blue">📅</div>
           </div>
           <div class="stat-value">${stats.upcomingEvents}</div>
-          <div class="stat-subtext">
-            <span>Next: ${upcomingEvents[0] ? upcomingEvents[0].title.substring(0, 22) + '...' : 'None'}</span>
-          </div>
+          <div class="stat-subtext">Active on schedule</div>
         </div>
 
         <!-- Total Volunteers -->
         <div class="stat-card">
           <div class="stat-header">
-            <span class="stat-title">Total Volunteers</span>
+            <span class="stat-title">Registered Volunteers</span>
             <div class="stat-icon blue">👥</div>
           </div>
           <div class="stat-value">${stats.totalVolunteers}</div>
-          <div class="stat-subtext">
-            <span>Active roster & profiles</span>
-          </div>
+          <div class="stat-subtext">Active club roster</div>
         </div>
 
         <!-- Open Staffing Positions -->
@@ -89,9 +75,7 @@ const DashboardView = {
           <div class="stat-value" style="color: ${stats.openPositions > 0 ? 'var(--status-amber-solid)' : 'var(--status-green-solid)'}">
             ${stats.openPositions}
           </div>
-          <div class="stat-subtext">
-            <span>Across all scheduled events</span>
-          </div>
+          <div class="stat-subtext">${stats.openPositions > 0 ? 'Slots needing volunteers' : 'All positions filled'}</div>
         </div>
 
         <!-- Staffing Coverage Percentage -->
@@ -102,24 +86,24 @@ const DashboardView = {
           </div>
           <div style="display: flex; align-items: baseline; gap: 8px;">
             <div class="stat-value">${stats.coveragePercentage}%</div>
-            <span class="badge ${coverageBadgeClass}">${stats.totalAssignedPositions}/${stats.totalRequiredPositions} filled</span>
+            <span class="badge ${coverageBadgeClass}">${stats.totalAssignedPositions}/${stats.totalRequiredPositions}</span>
           </div>
-          <div style="margin-top: 10px;">
-            <div class="progress-container">
+          <div style="margin-top: 8px;">
+            <div class="progress-container" style="height: 6px;">
               <div class="progress-bar ${progressColorClass}" style="width: ${stats.coveragePercentage}%;"></div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- MAIN DASHBOARD SPLIT GRID -->
+      <!-- MAIN CONTENT: UPCOMING EVENTS & HIGH-PRIORITY ALERTS -->
       <div class="dashboard-grid">
-        <!-- LEFT: UPCOMING EVENTS & LIVE STAFFING STATUS -->
+        <!-- LEFT: UPCOMING EVENTS (STREAMLINED) -->
         <div class="card">
           <div class="card-header">
-            <h3><span>📌</span> Upcoming Events & Staffing Status</h3>
+            <h3><span>📌</span> Upcoming Events</h3>
             <button class="btn btn-secondary btn-sm" onclick="AppRouter.navigate('events')">
-              View All Events &rarr;
+              View All &rarr;
             </button>
           </div>
           <div class="card-body" style="padding: 0;">
@@ -129,9 +113,8 @@ const DashboardView = {
                   <tr>
                     <th>Event</th>
                     <th>Date & Location</th>
-                    <th>Staffing Progress</th>
-                    <th>Status</th>
-                    <th>Action</th>
+                    <th>Coverage</th>
+                    <th style="text-align: right;">Action</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -143,54 +126,41 @@ const DashboardView = {
                     
                     let statusBadge = "badge-green";
                     let barColor = "green";
-                    let label = "Fully Staffed";
+                    let statusDot = "🟢";
                     
                     if (pct < 50) {
                       statusBadge = "badge-red";
                       barColor = "red";
-                      label = "Critical Shortage";
+                      statusDot = "🔴";
                     } else if (pct < 100) {
                       statusBadge = "badge-amber";
                       barColor = "amber";
-                      label = "Needs Volunteers";
+                      statusDot = "🟡";
                     }
 
                     return `
                       <tr>
                         <td>
-                          <strong style="color: var(--navy-900); display: block; font-size: 0.925rem;">${ev.title}</strong>
-                          <span style="font-size: 0.75rem; color: var(--text-muted);">${ev.category} • ${ev.expectedAttendees} expected</span>
+                          <div style="font-weight: 700; color: var(--navy-900); font-size: 0.9rem;">${ev.title}</div>
+                          <span class="badge badge-gray" style="font-size: 0.7rem; padding: 1px 6px; margin-top: 3px;">${ev.category}</span>
                         </td>
                         <td>
-                          <div style="font-weight: 500; font-size: 0.85rem;">${ev.date}</div>
-                          <div style="font-size: 0.775rem; color: var(--text-muted);">${ev.location}</div>
+                          <div style="font-size: 0.825rem; font-weight: 600; color: var(--navy-800);">${ev.date}</div>
+                          <div style="font-size: 0.75rem; color: var(--text-muted);">${ev.location}</div>
                         </td>
-                        <td style="min-width: 140px;">
-                          <div style="display: flex; justify-content: space-between; font-size: 0.775rem; margin-bottom: 4px; font-weight: 600;">
-                            <span>${ass}/${req} volunteers</span>
+                        <td style="min-width: 130px;">
+                          <div style="display: flex; justify-content: space-between; font-size: 0.75rem; font-weight: 600; margin-bottom: 4px;">
+                            <span>${statusDot} ${ass}/${req}</span>
                             <span>${pct}%</span>
                           </div>
-                          <div class="progress-container">
+                          <div class="progress-container" style="height: 6px;">
                             <div class="progress-bar ${barColor}" style="width: ${pct}%;"></div>
                           </div>
                         </td>
-                        <td>
-                          <span class="badge ${statusBadge}">
-                            <span class="badge-dot"></span> ${label}
-                          </span>
-                        </td>
-                        <td>
-                          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                            <button class="btn btn-secondary btn-sm" onclick="App.goToLiveOps('${ev.id}')" title="Open Live Event Operations Center">
-                              🚨 Live Ops
-                            </button>
-                            <button class="btn btn-secondary btn-sm" onclick="App.goToEventStaffing('${ev.id}')">
-                              Staffing
-                            </button>
-                            <button class="btn btn-primary btn-sm" onclick="App.goToEventCopilot('${ev.id}')" title="Analyze with AI Copilot">
-                              🤖 Copilot
-                            </button>
-                          </div>
+                        <td style="text-align: right;">
+                          <button class="btn btn-secondary btn-sm" onclick="App.goToEventStaffing('${ev.id}')">
+                            Manage &rarr;
+                          </button>
                         </td>
                       </tr>
                     `;
@@ -201,48 +171,106 @@ const DashboardView = {
           </div>
         </div>
 
-        <!-- RIGHT: RECENT STAFFING ALERTS -->
+        <!-- RIGHT: PRIORITY STAFFING ALERTS (CONCISE) -->
         <div class="card">
           <div class="card-header">
             <h3>
-              <span>⚡</span> Staffing Alerts
-              <span class="badge badge-red" style="font-size: 0.7rem; padding: 2px 7px;">${alerts.filter(a => a.severity === 'urgent').length} Urgent</span>
+              <span>⚡</span> Priority Alerts
+              ${urgentAlerts.length > 0 ? `
+                <span class="badge badge-red" style="font-size: 0.65rem; padding: 2px 6px;">${urgentAlerts.length} Urgent</span>
+              ` : ''}
             </h3>
-            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Auto-Detected</span>
+            <button class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 3px 8px;" onclick="AppRouter.navigate('staffing')">
+              Staffing Board &rarr;
+            </button>
           </div>
           <div class="card-body">
             <div class="alerts-list">
-              ${alerts.length === 0 ? `
-                <div style="text-align: center; padding: 24px; color: var(--text-muted);">
-                  <div style="font-size: 2rem; margin-bottom: 8px;">✅</div>
-                  <p>All positions are fully staffed! No active alerts.</p>
+              ${displayAlerts.length === 0 ? `
+                <div style="text-align: center; padding: 28px 12px; color: var(--status-green-text);">
+                  <div style="font-size: 2rem; margin-bottom: 6px;">✅</div>
+                  <strong style="font-size: 0.9rem;">Roster is in great shape</strong>
+                  <p style="font-size: 0.775rem; color: var(--text-muted); margin-top: 2px;">No urgent shortages detected.</p>
                 </div>
-              ` : alerts.slice(0, 5).map(alt => {
-                const isMissing = alt.level === "MISSING VOLUNTEER" || (alt.id && alt.id.includes("missing"));
+              ` : displayAlerts.map(alt => {
+                const isUrgent = alt.severity === "urgent" || alt.level === "CRITICAL" || alt.level === "URGENT";
                 return `
-                  <div class="alert-item ${alt.severity}">
-                    <div class="alert-top">
-                      <span class="alert-title">${alt.title}</span>
-                      <span class="badge ${alt.severity === 'urgent' ? 'badge-red' : (alt.severity === 'warning' ? 'badge-amber' : 'badge-green')}" style="font-size: 0.65rem;">
+                  <div class="alert-item ${isUrgent ? 'urgent' : 'warning'}" style="padding: 10px 12px; gap: 2px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                      <strong style="font-size: 0.825rem; color: var(--navy-900);">${alt.title}</strong>
+                      <span class="badge ${isUrgent ? 'badge-red' : 'badge-amber'}" style="font-size: 0.6rem; padding: 1px 5px;">
                         ${alt.level}
                       </span>
                     </div>
-                    <span class="alert-event-tag">📌 ${alt.event} • ${alt.date}</span>
-                    <div class="alert-desc">${alt.message}</div>
-                    <div style="margin-top: 6px;">
-                      ${isMissing ? `
-                        <button class="btn btn-sm btn-secondary" style="padding: 4px 10px; font-size: 0.75rem; background: var(--status-red-bg); color: var(--status-red-solid); border-color: var(--status-red-border);" onclick="App.goToLiveOps('${alt.eventId}')">
-                          🚨 Resolve Incident in Live Ops &rarr;
-                        </button>
-                      ` : `
-                        <button class="btn btn-sm btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="App.goToEventStaffing('${alt.eventId}')">
-                          Fill Vacancy &rarr;
-                        </button>
-                      `}
+                    <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">
+                      📌 ${alt.event} &bull; ${alt.date}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px;">
+                      <span style="font-size: 0.75rem; color: ${isUrgent ? 'var(--status-red-solid)' : 'var(--status-amber-solid)'}; font-weight: 600;">
+                        ${alt.remaining ? `${alt.remaining} needed` : 'Action required'}
+                      </span>
+                      <button 
+                        class="btn btn-sm btn-secondary" 
+                        style="padding: 3px 8px; font-size: 0.725rem;"
+                        onclick="App.goToEventStaffing('${alt.eventId}')"
+                      >
+                        Fill &rarr;
+                      </button>
                     </div>
                   </div>
                 `;
               }).join('')}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- QUICK NAVIGATION BAR (CLEAN 3-CARD ROW) -->
+      <div style="margin-top: 24px; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px;">
+        <div 
+          class="card" 
+          style="padding: 16px 18px; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;"
+          onclick="AppRouter.navigate('staffing')"
+          onmouseover="this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.transform='translateY(0)'"
+        >
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="stat-icon blue" style="width: 40px; height: 40px; font-size: 1.2rem;">📋</div>
+            <div>
+              <strong style="color: var(--navy-900); font-size: 0.9rem; display: block;">Staffing Matrix</strong>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Assign volunteers & track open quotas</span>
+            </div>
+          </div>
+        </div>
+
+        <div 
+          class="card" 
+          style="padding: 16px 18px; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;"
+          onclick="AppRouter.navigate('copilot')"
+          onmouseover="this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.transform='translateY(0)'"
+        >
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="stat-icon blue" style="width: 40px; height: 40px; font-size: 1.2rem;">🤖</div>
+            <div>
+              <strong style="color: var(--navy-900); font-size: 0.9rem; display: block;">AI Staffing Copilot</strong>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Smart recommendations & gap analysis</span>
+            </div>
+          </div>
+        </div>
+
+        <div 
+          class="card" 
+          style="padding: 16px 18px; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.15s ease;"
+          onclick="AppRouter.navigate('volunteers')"
+          onmouseover="this.style.transform='translateY(-2px)'"
+          onmouseout="this.style.transform='translateY(0)'"
+        >
+          <div style="display: flex; align-items: center; gap: 12px;">
+            <div class="stat-icon blue" style="width: 40px; height: 40px; font-size: 1.2rem;">👥</div>
+            <div>
+              <strong style="color: var(--navy-900); font-size: 0.9rem; display: block;">Volunteer Directory</strong>
+              <span style="font-size: 0.75rem; color: var(--text-muted);">Browse skills & availability schedules</span>
             </div>
           </div>
         </div>

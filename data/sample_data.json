@@ -9,6 +9,55 @@
   },
   "events": [
     {
+      "id": "evt-1795413672714",
+      "title": "Automated Test Leadership Gala",
+      "category": "Social",
+      "date": "2026-12-20",
+      "time": "06:00 PM - 09:00 PM",
+      "location": "Alumni Pavilion",
+      "expectedAttendees": 200,
+      "description": "Student organization event.",
+      "status": "In-Progress",
+      "roles": [
+        {
+          "id": "role-evt-1795413672714-1",
+          "name": "Welcome Host",
+          "required": 2,
+          "assignedVolunteerIds": [
+            "vol-102"
+          ],
+          "skillsRequired": [
+            "Greeter"
+          ]
+        },
+        {
+          "id": "role-evt-1795413672714-2",
+          "name": "Beverage Coordinator",
+          "required": 1,
+          "assignedVolunteerIds": [
+            "vol-101"
+          ],
+          "skillsRequired": [
+            "Food Logistics"
+          ]
+        }
+      ],
+      "checkIns": {
+        "vol-1795413672740": {
+          "status": "replaced",
+          "timestamp": null,
+          "notes": "Replaced by backup: Emergency swap",
+          "updatedAt": "2026-11-23T00:01:12.866063"
+        },
+        "vol-102": {
+          "status": "checked_in",
+          "timestamp": "12:01 AM",
+          "notes": "Emergency backup replacement for vol-1795413672740",
+          "updatedAt": "2026-11-23T00:01:12.866063"
+        }
+      }
+    },
+    {
       "id": "evt-101",
       "title": "Spring Tech Symposium 2026",
       "category": "Conference",
@@ -335,33 +384,83 @@
           "id": "role-100-1",
           "name": "Check-in & Welcome Table",
           "required": 3,
-          "assignedVolunteerIds": ["vol-102", "vol-106", "vol-112"],
-          "skillsRequired": ["Check-in", "Customer Service"]
+          "assignedVolunteerIds": [
+            "vol-102",
+            "vol-106",
+            "vol-112"
+          ],
+          "skillsRequired": [
+            "Check-in",
+            "Customer Service"
+          ]
         },
         {
           "id": "role-100-2",
           "name": "Lunch & Refreshment Table",
           "required": 3,
-          "assignedVolunteerIds": ["vol-110", "vol-116", "vol-117"],
-          "skillsRequired": ["Food Logistics"]
+          "assignedVolunteerIds": [
+            "vol-110",
+            "vol-116",
+            "vol-117"
+          ],
+          "skillsRequired": [
+            "Food Logistics"
+          ]
         },
         {
           "id": "role-100-3",
           "name": "Sound & Music Setup",
           "required": 2,
-          "assignedVolunteerIds": ["vol-101", "vol-107"],
-          "skillsRequired": ["Audio/Visual"]
+          "assignedVolunteerIds": [
+            "vol-101",
+            "vol-107"
+          ],
+          "skillsRequired": [
+            "Audio/Visual"
+          ]
         }
       ],
       "checkIns": {
-        "vol-102": { "status": "checked_in", "timestamp": "10:30 AM", "notes": "Completed 4.5 hrs" },
-        "vol-106": { "status": "checked_in", "timestamp": "10:35 AM", "notes": "Completed 4.5 hrs" },
-        "vol-112": { "status": "checked_in", "timestamp": "10:45 AM", "notes": "Completed 4.2 hrs" },
-        "vol-110": { "status": "checked_in", "timestamp": "10:40 AM", "notes": "Completed 4.3 hrs" },
-        "vol-116": { "status": "checked_in", "timestamp": "10:42 AM", "notes": "Completed 4.3 hrs" },
-        "vol-117": { "status": "checked_in", "timestamp": "10:50 AM", "notes": "Completed 4.1 hrs" },
-        "vol-101": { "status": "checked_in", "timestamp": "10:15 AM", "notes": "Completed 5.0 hrs" },
-        "vol-107": { "status": "checked_in", "timestamp": "10:20 AM", "notes": "Completed 4.8 hrs" }
+        "vol-102": {
+          "status": "checked_in",
+          "timestamp": "10:30 AM",
+          "notes": "Completed 4.5 hrs"
+        },
+        "vol-106": {
+          "status": "checked_in",
+          "timestamp": "10:35 AM",
+          "notes": "Completed 4.5 hrs"
+        },
+        "vol-112": {
+          "status": "checked_in",
+          "timestamp": "10:45 AM",
+          "notes": "Completed 4.2 hrs"
+        },
+        "vol-110": {
+          "status": "checked_in",
+          "timestamp": "10:40 AM",
+          "notes": "Completed 4.3 hrs"
+        },
+        "vol-116": {
+          "status": "checked_in",
+          "timestamp": "10:42 AM",
+          "notes": "Completed 4.3 hrs"
+        },
+        "vol-117": {
+          "status": "checked_in",
+          "timestamp": "10:50 AM",
+          "notes": "Completed 4.1 hrs"
+        },
+        "vol-101": {
+          "status": "checked_in",
+          "timestamp": "10:15 AM",
+          "notes": "Completed 5.0 hrs"
+        },
+        "vol-107": {
+          "status": "checked_in",
+          "timestamp": "10:20 AM",
+          "notes": "Completed 4.8 hrs"
+        }
       },
       "postEventReport": {
         "attendance": 235,
@@ -686,6 +785,20 @@
       "availability": "Weekdays After 3PM",
       "maxHoursPerWeek": 8,
       "notes": "Human resources focus; great at welcoming new volunteer trainees."
+    },
+    {
+      "id": "vol-1795413672740",
+      "name": "Alex Test Volunteer",
+      "email": "alex.test@student.uta.edu",
+      "phone": "(817) 555-0100",
+      "major": "Computer Science '26",
+      "skills": [
+        "Greeter",
+        "Customer Service"
+      ],
+      "availability": "Flexible",
+      "maxHoursPerWeek": 10,
+      "notes": ""
     }
   ]
 }

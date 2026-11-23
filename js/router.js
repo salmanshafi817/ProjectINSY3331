@@ -26,15 +26,15 @@ const AppRouter = {
   },
 
   titles: {
-    dashboard: { title: "Operations Dashboard", subtitle: "Real-time event coverage and staffing metrics" },
-    events: { title: "My Events", subtitle: "Student organization event schedule and role setup" },
-    volunteers: { title: "Volunteer Management", subtitle: "Student profiles, verified skills, and schedules" },
-    staffing: { title: "Staffing Matrix", subtitle: "Live role assignment, quotas, and vacancy resolution" },
-    operations: { title: "Live Event Operations Center", subtitle: "Event-day check-in, real-time staffing status, and proactive incident response" },
-    liveops: { title: "Live Event Operations Center", subtitle: "Event-day check-in, real-time staffing status, and proactive incident response" },
-    copilot: { title: "AI Staffing Copilot", subtitle: "Intelligent staffing assistant and grounded role sizing" },
-    reports: { title: "Reports & Analytics", subtitle: "Post-event outcomes and retrospective metrics" },
-    settings: { title: "Settings & Profile", subtitle: "Chapter configuration and alert thresholds" }
+    dashboard: { title: "Dashboard", subtitle: "Event staffing overview" },
+    events: { title: "My Events", subtitle: "Event schedule & positions" },
+    volunteers: { title: "Volunteers", subtitle: "Student profiles & skills" },
+    staffing: { title: "Staffing Matrix", subtitle: "Role assignments & quotas" },
+    operations: { title: "Live Operations", subtitle: "Event-day check-in & incidents" },
+    liveops: { title: "Live Operations", subtitle: "Event-day check-in & incidents" },
+    copilot: { title: "AI Copilot", subtitle: "Smart staffing recommendations" },
+    reports: { title: "Reports", subtitle: "Post-event analytics" },
+    settings: { title: "Settings", subtitle: "Organization preferences" }
   },
 
   init() {
