@@ -130,6 +130,27 @@ const GatherlyStorage = {
         }
       });
 
+      // Check missing volunteer check-ins
+      const checkIns = ev.checkIns || {};
+      Object.entries(checkIns).forEach(([vid, cdata]) => {
+        if (cdata.status === "missing") {
+          const vol = (data.volunteers || []).find(v => v.id === vid);
+          const vName = vol ? vol.name : vid;
+          alerts.push({
+            id: `alt-missing-${ev.id}-${vid}`,
+            severity: "urgent",
+            level: "MISSING VOLUNTEER",
+            title: `No-Show Alert: ${vName}`,
+            event: ev.title,
+            eventId: ev.id,
+            date: ev.date,
+            message: `${vName} has not checked in for their scheduled shift in '${ev.title}'. Immediate backup recommended.`,
+            remaining: 1,
+            color: "red"
+          });
+        }
+      });
+
       if (evReq > 0 && evAss === evReq) {
         alerts.push({
           id: `alt-complete-${ev.id}`,
@@ -391,6 +412,380 @@ const GatherlyStorage = {
 
     this.saveLocalData(local);
     return { success: true, message: "Staffing plan applied to event roster successfully." };
+  },
+
+  // 7. Check-in or update volunteer event status
+  async checkInVolunteer(eventId, volunteerId, status = "checked_in", notes = "") {
+    if (await this.isServerAvailable()) {
+      try {
+        const res = await fetch("/api/operations/checkin", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId, volunteerId, status, notes })
+        });
+        const json = await res.json();
+        if (res.ok) return { success: true, message: json.message };
+        return { success: false, error: json.error };
+      } catch (e) {}
+    }
+
+    // Local fallback
+    const local = this.getLocalData();
+    const ev = (local.events || []).find(e => e.id === eventId);
+    if (!ev) return { success: false, error: "Event not found" };
+
+    const assignedVols = [];
+    (ev.roles || []).forEach(r => (r.assignedVolunteerIds || []).forEach(id => assignedVols.push(id)));
+    if (!assignedVols.includes(volunteerId)) {
+      return { success: false, error: "Volunteer is not assigned to this event." };
+    }
+
+    ev.checkIns = ev.checkIns || {};
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    ev.checkIns[volunteerId] = {
+      status,
+      timestamp: status === "checked_in" ? timeStr : (ev.checkIns[volunteerId]?.timestamp || null),
+      notes: notes || ev.checkIns[volunteerId]?.notes || "",
+      updatedAt: now.toISOString()
+    };
+
+    this.saveLocalData(local);
+    return { success: true, message: `Volunteer status set to ${status}` };
+  },
+
+  // 8. Rapid replacement for absent/drop-out volunteer
+  async replaceVolunteer(eventId, roleId, oldVolunteerId, newVolunteerId, reason = "Drop-out / No-show replacement") {
+    if (await this.isServerAvailable()) {
+      try {
+        const res = await fetch("/api/operations/replace", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId, roleId, oldVolunteerId, newVolunteerId, reason })
+        });
+        const json = await res.json();
+        if (res.ok) return { success: true, message: json.message };
+        return { success: false, error: json.error };
+      } catch (e) {}
+    }
+
+    // Local fallback
+    const local = this.getLocalData();
+    const ev = (local.events || []).find(e => e.id === eventId);
+    if (!ev) return { success: false, error: "Event not found" };
+
+    const role = (ev.roles || []).find(r => r.id === roleId);
+    if (!role) return { success: false, error: "Role not found in event" };
+
+    role.assignedVolunteerIds = role.assignedVolunteerIds || [];
+    const oldIdx = role.assignedVolunteerIds.indexOf(oldVolunteerId);
+    if (oldIdx !== -1) {
+      role.assignedVolunteerIds.splice(oldIdx, 1);
+    }
+
+    // Check collision for new volunteer in other roles
+    for (const otherRole of ev.roles || []) {
+      if ((otherRole.assignedVolunteerIds || []).includes(newVolunteerId)) {
+        return { success: false, error: "Replacement volunteer is already assigned to another role in this event." };
+      }
+    }
+
+    if (!role.assignedVolunteerIds.includes(newVolunteerId)) {
+      role.assignedVolunteerIds.push(newVolunteerId);
+    }
+
+    ev.checkIns = ev.checkIns || {};
+    const now = new Date();
+    const timeStr = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    ev.checkIns[oldVolunteerId] = {
+      status: "replaced",
+      timestamp: null,
+      notes: `Replaced by backup: ${reason}`,
+      updatedAt: now.toISOString()
+    };
+
+    ev.checkIns[newVolunteerId] = {
+      status: "checked_in",
+      timestamp: timeStr,
+      notes: `Emergency backup replacement for ${oldVolunteerId}`,
+      updatedAt: now.toISOString()
+    };
+
+    this.saveLocalData(local);
+    return { success: true, message: "Backup volunteer assigned and checked in successfully." };
+  },
+
+  // 9. Update event status (e.g. Upcoming, In-Progress, Completed)
+  async updateEventStatus(eventId, newStatus) {
+    if (await this.isServerAvailable()) {
+      try {
+        const res = await fetch("/api/operations/event-status", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId, status: newStatus })
+        });
+        const json = await res.json();
+        if (res.ok) return { success: true };
+      } catch (e) {}
+    }
+
+    const local = this.getLocalData();
+    const ev = (local.events || []).find(e => e.id === eventId);
+    if (ev) {
+      ev.status = newStatus;
+      this.saveLocalData(local);
+      return { success: true };
+    }
+    return { success: false, error: "Event not found" };
+  },
+
+  // 10. Operations Center Aggregated Data View Model
+  async getEventOperationsData(eventId) {
+    const allData = await this.getAllData();
+    const events = allData.events || [];
+    const volunteers = allData.volunteers || [];
+    const volMap = {};
+    volunteers.forEach(v => volMap[v.id] = v);
+
+    const event = events.find(e => e.id === eventId) || events[0];
+    if (!event) return null;
+
+    const roles = event.roles || [];
+    const checkIns = event.checkIns || {};
+
+    let totalRequired = 0;
+    let totalAssigned = 0;
+    let totalCheckedIn = 0;
+    let totalPending = 0;
+    let totalMissing = 0;
+
+    const enrichedRoles = [];
+    const volunteersList = [];
+    const missingAlerts = [];
+    const understaffedAlerts = [];
+    const coveredPositions = [];
+    const positionsNeedingAttention = [];
+
+    roles.forEach(role => {
+      const req = parseInt(role.required || 0);
+      const assignedIds = role.assignedVolunteerIds || [];
+      const ass = assignedIds.length;
+      totalRequired += req;
+      totalAssigned += ass;
+
+      let roleCheckedIn = 0;
+      let rolePending = 0;
+      let roleMissing = 0;
+
+      const roleVolunteers = assignedIds.map(vid => {
+        const v = volMap[vid] || { id: vid, name: "Unlisted Volunteer", email: "N/A", phone: "N/A", major: "Student", skills: [] };
+        const checkRecord = checkIns[vid] || { status: "pending", timestamp: null, notes: "" };
+        const status = checkRecord.status || "pending";
+
+        if (status === "checked_in") {
+          roleCheckedIn++;
+          totalCheckedIn++;
+        } else if (status === "missing") {
+          roleMissing++;
+          totalMissing++;
+          missingAlerts.push({
+            volunteer: v,
+            role,
+            event,
+            checkRecord
+          });
+        } else {
+          rolePending++;
+          totalPending++;
+        }
+
+        const volItem = {
+          ...v,
+          roleId: role.id,
+          roleName: role.name,
+          checkInStatus: status,
+          timestamp: checkRecord.timestamp,
+          notes: checkRecord.notes
+        };
+        volunteersList.push(volItem);
+        return volItem;
+      });
+
+      const openSlots = Math.max(0, req - ass);
+      const isUnderstaffed = openSlots > 0;
+      const hasMissing = roleMissing > 0;
+      const isFullyCovered = ass >= req && roleCheckedIn === ass && !isUnderstaffed;
+
+      let roleStatus = "covered"; // "covered", "attention", "urgent"
+      if (ass === 0 && req > 0) {
+        roleStatus = "urgent";
+      } else if (isUnderstaffed || hasMissing) {
+        roleStatus = (openSlots >= 2 || roleMissing >= 2) ? "urgent" : "attention";
+      } else if (rolePending > 0) {
+        roleStatus = "attention";
+      }
+
+      if (isUnderstaffed) {
+        understaffedAlerts.push({
+          role,
+          event,
+          openSlots,
+          required: req,
+          assigned: ass
+        });
+      }
+
+      const roleObj = {
+        ...role,
+        required: req,
+        assignedCount: ass,
+        checkedInCount: roleCheckedIn,
+        pendingCount: rolePending,
+        missingCount: roleMissing,
+        openSlots,
+        volunteers: roleVolunteers,
+        roleStatus,
+        isFullyCovered
+      };
+
+      enrichedRoles.push(roleObj);
+
+      if (isFullyCovered) {
+        coveredPositions.push(roleObj);
+      } else {
+        positionsNeedingAttention.push(roleObj);
+      }
+    });
+
+    const checkInRate = totalAssigned > 0 ? Math.round((totalCheckedIn / totalAssigned) * 100) : 0;
+    const coveragePct = totalRequired > 0 ? Math.round((totalAssigned / totalRequired) * 100) : 100;
+
+    let healthStatus = "green"; // "green", "amber", "red"
+    if (totalMissing > 0 || (totalRequired - totalAssigned) >= 3) {
+      healthStatus = "red";
+    } else if (coveragePct < 100 || totalPending > 0) {
+      healthStatus = "amber";
+    }
+
+    return {
+      event,
+      allEvents: events,
+      allVolunteers: volunteers,
+      roles: enrichedRoles,
+      volunteersList,
+      summary: {
+        totalRequired,
+        totalAssigned,
+        checkedInCount: totalCheckedIn,
+        pendingCount: totalPending,
+        missingCount: totalMissing,
+        openSlots: Math.max(0, totalRequired - totalAssigned),
+        checkInRate,
+        coveragePct,
+        healthStatus
+      },
+      missingAlerts,
+      understaffedAlerts,
+      coveredPositions,
+      positionsNeedingAttention
+    };
+  },
+
+  // 11. Post-Event Staffing Performance Retrospective
+  async getPostEventReport(eventId) {
+    const allData = await this.getAllData();
+    const events = allData.events || [];
+    const volunteers = allData.volunteers || [];
+    const volMap = {};
+    volunteers.forEach(v => volMap[v.id] = v);
+
+    const event = events.find(e => e.id === eventId) || events[0];
+    if (!event) return null;
+
+    const roles = event.roles || [];
+    const checkIns = event.checkIns || {};
+
+    let plannedSlots = 0;
+    let actualStaffed = 0;
+    let checkedInCount = 0;
+    let missingCount = 0;
+
+    const roleFulfillment = roles.map(r => {
+      const req = parseInt(r.required || 0);
+      const assigned = r.assignedVolunteerIds || [];
+      const ass = assigned.length;
+      plannedSlots += req;
+      actualStaffed += ass;
+
+      let rCheckedIn = 0;
+      let rMissing = 0;
+
+      const volRecords = assigned.map(vid => {
+        const v = volMap[vid] || { name: vid };
+        const c = checkIns[vid] || { status: "pending", timestamp: null };
+        if (c.status === "checked_in") {
+          rCheckedIn++;
+          checkedInCount++;
+        } else if (c.status === "missing") {
+          rMissing++;
+          missingCount++;
+        }
+        return { volunteer: v, checkIn: c };
+      });
+
+      const fillRate = req > 0 ? Math.round((ass / req) * 100) : 100;
+      const checkRate = ass > 0 ? Math.round((rCheckedIn / ass) * 100) : 0;
+
+      return {
+        roleId: r.id,
+        roleName: r.name,
+        required: req,
+        assigned: ass,
+        checkedIn: rCheckedIn,
+        missing: rMissing,
+        fillRate,
+        checkRate,
+        status: fillRate >= 100 && checkRate >= 100 ? "Optimal" : (fillRate >= 75 ? "Adequate" : "Shortage"),
+        volunteers: volRecords
+      };
+    });
+
+    const completionRate = plannedSlots > 0 ? Math.round((checkedInCount / plannedSlots) * 100) : 100;
+    const noShowRate = actualStaffed > 0 ? Math.round((missingCount / actualStaffed) * 100) : 0;
+    
+    // Estimate volunteer hours based on duration of event (approx 4 hours per shift)
+    const hoursDelivered = Math.round(checkedInCount * 4.2 * 10) / 10;
+
+    // Custom or heuristic AI retrospective
+    let aiRetrospective = event.postEventReport?.aiRetrospective;
+    if (!aiRetrospective) {
+      if (completionRate >= 90) {
+        aiRetrospective = `Staffing was effectively deployed for ${event.title}. Volunteer attendance reached ${completionRate}%. For future iterations of this event, volunteer quotas can be maintained at current baseline levels.`;
+      } else if (completionRate >= 65) {
+        aiRetrospective = `Staffing experienced moderate friction with ${plannedSlots - actualStaffed} open vacancies and ${missingCount} no-shows. Recommend scheduling 1 backup reserve volunteer for high-traffic positions like Check-in and Stage Marshalls.`;
+      } else {
+        aiRetrospective = `Critical staffing deficit detected during event operations (${completionRate}% fulfillment). Immediate post-event review recommended: expand advance recruitment window and verify shift schedule confirmations 48 hours prior.`;
+      }
+    }
+
+    return {
+      event,
+      summary: {
+        plannedSlots,
+        actualStaffed,
+        checkedInCount,
+        missingCount,
+        completionRate,
+        noShowRate,
+        hoursDelivered,
+        expectedAttendees: event.expectedAttendees || 100,
+        actualAttendance: event.postEventReport?.attendance || Math.round((event.expectedAttendees || 100) * 1.05)
+      },
+      roleFulfillment,
+      aiRetrospective
+    };
   },
 
   async resetData() {

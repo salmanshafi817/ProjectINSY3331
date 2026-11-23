@@ -194,6 +194,38 @@ def run_tests():
             except urllib.error.HTTPError as he:
                 assert_test("Copilot Plan Rejects Duplicate Volunteer", he.code == 400, f"Blocked with HTTP {he.code}")
 
+            # Test 13: POST /api/operations/checkin (Live Check-in)
+            checkin_data = json.dumps({
+                "eventId": new_event_id,
+                "volunteerId": new_vol_id,
+                "status": "checked_in",
+                "notes": "Arrived on time for gala"
+            }).encode("utf-8")
+            req_checkin = urllib.request.Request(f"{base_url}/api/operations/checkin", data=checkin_data, headers={"Content-Type": "application/json"}, method="POST")
+            resp_checkin = urllib.request.urlopen(req_checkin)
+            assert_test("POST /api/operations/checkin marks volunteer checked in", resp_checkin.status == 200)
+
+            # Test 14: POST /api/operations/replace (Rapid Backup Replacement)
+            replace_data = json.dumps({
+                "eventId": new_event_id,
+                "roleId": role_1["id"],
+                "oldVolunteerId": new_vol_id,
+                "newVolunteerId": "vol-102",
+                "reason": "Emergency swap"
+            }).encode("utf-8")
+            req_replace = urllib.request.Request(f"{base_url}/api/operations/replace", data=replace_data, headers={"Content-Type": "application/json"}, method="POST")
+            resp_replace = urllib.request.urlopen(req_replace)
+            assert_test("POST /api/operations/replace swaps volunteer", resp_replace.status == 200)
+
+            # Test 15: POST /api/operations/event-status (Update status to In-Progress)
+            status_data = json.dumps({
+                "eventId": new_event_id,
+                "status": "In-Progress"
+            }).encode("utf-8")
+            req_status = urllib.request.Request(f"{base_url}/api/operations/event-status", data=status_data, headers={"Content-Type": "application/json"}, method="POST")
+            resp_status = urllib.request.urlopen(req_status)
+            assert_test("POST /api/operations/event-status updates status", resp_status.status == 200)
+
         except Exception as e:
             assert_test("Assignment & Collision Workflow", False, str(e))
 

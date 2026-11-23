@@ -140,12 +140,15 @@ const EventsView = {
                   </div>
                 </div>
 
-                <div style="display: flex; gap: 8px; margin-top: auto;">
-                  <button class="btn btn-secondary" style="flex: 1;" onclick="App.goToEventStaffing('${ev.id}')">
+                <div style="display: flex; gap: 6px; margin-top: auto; flex-wrap: wrap;">
+                  <button class="btn btn-secondary btn-sm" style="flex: 1; border-color: rgba(239, 68, 68, 0.4); color: var(--status-red-solid);" onclick="App.goToLiveOps('${ev.id}')">
+                    <span>🚨</span> Live Ops
+                  </button>
+                  <button class="btn btn-secondary btn-sm" style="flex: 1;" onclick="App.goToEventStaffing('${ev.id}')">
                     <span>📋</span> Staffing
                   </button>
-                  <button class="btn btn-primary" style="flex: 1;" onclick="App.goToEventCopilot('${ev.id}')">
-                    <span>🤖</span> AI Copilot
+                  <button class="btn btn-primary btn-sm" style="flex: 1;" onclick="App.goToEventCopilot('${ev.id}')">
+                    <span>🤖</span> Copilot
                   </button>
                 </div>
               </div>

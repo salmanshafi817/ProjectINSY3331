@@ -111,6 +111,24 @@ def generate_alerts(data):
                     "remaining": remaining,
                     "color": "amber"
                 })
+
+        # Check missing volunteer check-ins
+        check_ins = ev.get("checkIns", {})
+        for vid, cdata in check_ins.items():
+            if cdata.get("status") == "missing":
+                v_name = next((v.get("name") for v in data.get("volunteers", []) if v.get("id") == vid), vid)
+                alerts.append({
+                    "id": f"alt-missing-{ev.get('id')}-{vid}",
+                    "severity": "urgent",
+                    "level": "MISSING VOLUNTEER",
+                    "title": f"No-Show Alert: {v_name}",
+                    "event": ev_title,
+                    "eventId": ev.get("id"),
+                    "date": ev_date,
+                    "message": f"{v_name} has not checked in for their scheduled shift in '{ev_title}'. Immediate backup recommended.",
+                    "remaining": 1,
+                    "color": "red"
+                })
                 
         if ev_req > 0 and ev_ass == ev_req:
             alerts.append({
@@ -365,10 +383,119 @@ class GatherlyRequestHandler(http.server.SimpleHTTPRequestHandler):
                 "event": event,
                 "stats": calculate_stats(data)
             })
-                
-        # 6. Reset to Sample Data
+
+        # 6. Live Operations: Volunteer Check-In
+        elif path == "/api/operations/checkin":
+            event_id = body.get("eventId")
+            volunteer_id = body.get("volunteerId")
+            status = body.get("status", "checked_in")  # "checked_in", "pending", "missing", "excused"
+            timestamp = body.get("timestamp") or datetime.now().strftime("%I:%M %p")
+            notes = body.get("notes", "")
+
+            if not event_id or not volunteer_id:
+                return self.send_json(400, {"error": "eventId and volunteerId are required."})
+
+            event = next((e for e in data.get("events", []) if e.get("id") == event_id), None)
+            if not event:
+                return self.send_json(404, {"error": "Event not found."})
+
+            # Verify volunteer is assigned to this event
+            assigned_vols = []
+            for r in event.get("roles", []):
+                assigned_vols.extend(r.get("assignedVolunteerIds", []))
+
+            if volunteer_id not in assigned_vols:
+                return self.send_json(400, {"error": "Volunteer is not assigned to any role in this event."})
+
+            check_ins = event.setdefault("checkIns", {})
+            check_ins[volunteer_id] = {
+                "status": status,
+                "timestamp": timestamp if status == "checked_in" else None,
+                "notes": notes,
+                "updatedAt": datetime.now().isoformat()
+            }
+
+            save_data(data)
+            return self.send_json(200, {
+                "message": f"Volunteer status updated to '{status}'",
+                "checkIns": check_ins,
+                "stats": calculate_stats(data)
+            })
+
+        # 7. Live Operations: Rapid Backup Replacement
+        elif path == "/api/operations/replace":
+            event_id = body.get("eventId")
+            role_id = body.get("roleId")
+            old_volunteer_id = body.get("oldVolunteerId")
+            new_volunteer_id = body.get("newVolunteerId")
+            reason = body.get("reason", "Drop-out / No-show replacement")
+
+            if not event_id or not role_id or not old_volunteer_id or not new_volunteer_id:
+                return self.send_json(400, {"error": "eventId, roleId, oldVolunteerId, and newVolunteerId are required."})
+
+            event = next((e for e in data.get("events", []) if e.get("id") == event_id), None)
+            if not event:
+                return self.send_json(404, {"error": "Event not found."})
+
+            role = next((r for r in event.get("roles", []) if r.get("id") == role_id), None)
+            if not role:
+                return self.send_json(404, {"error": "Role not found."})
+
+            assigned = role.setdefault("assignedVolunteerIds", [])
+            if old_volunteer_id in assigned:
+                assigned.remove(old_volunteer_id)
+
+            # Prevent conflict for new volunteer
+            for other_role in event.get("roles", []):
+                if new_volunteer_id in other_role.get("assignedVolunteerIds", []):
+                    return self.send_json(400, {"error": "Replacement volunteer is already assigned to another role in this event."})
+
+            if new_volunteer_id not in assigned:
+                assigned.append(new_volunteer_id)
+
+            check_ins = event.setdefault("checkIns", {})
+            check_ins[old_volunteer_id] = {
+                "status": "replaced",
+                "timestamp": None,
+                "notes": f"Replaced by backup: {reason}",
+                "updatedAt": datetime.now().isoformat()
+            }
+            check_ins[new_volunteer_id] = {
+                "status": "checked_in",
+                "timestamp": datetime.now().strftime("%I:%M %p"),
+                "notes": f"Emergency backup replacement for {old_volunteer_id}",
+                "updatedAt": datetime.now().isoformat()
+            }
+
+            save_data(data)
+            return self.send_json(200, {
+                "message": "Replacement volunteer assigned and checked in successfully",
+                "event": event,
+                "stats": calculate_stats(data)
+            })
+
+        # 8. Live Operations: Update Event Operational Status
+        elif path == "/api/operations/event-status":
+            event_id = body.get("eventId")
+            new_status = body.get("status")  # "Upcoming", "In-Progress", "Completed"
+
+            if not event_id or not new_status:
+                return self.send_json(400, {"error": "eventId and status are required."})
+
+            event = next((e for e in data.get("events", []) if e.get("id") == event_id), None)
+            if not event:
+                return self.send_json(404, {"error": "Event not found."})
+
+            event["status"] = new_status
+            save_data(data)
+            return self.send_json(200, {
+                "message": f"Event status updated to {new_status}",
+                "event": event,
+                "stats": calculate_stats(data)
+            })
+
+        # 9. Reset to Sample Data
         elif path == "/api/reset":
-            # Can re-read sample seed if desired
             return self.send_json(200, {"message": "Reset endpoint available"})
 
         return self.send_json(404, {"error": "Endpoint not found"})

@@ -22,11 +22,13 @@ const VolunteersView = {
           if (!assignmentsMap[vid]) {
             assignmentsMap[vid] = [];
           }
+          const checkStatus = (ev.checkIns || {})[vid]?.status;
           assignmentsMap[vid].push({
             eventId: ev.id,
             eventTitle: ev.title,
             eventDate: ev.date,
-            roleName: r.name
+            roleName: r.name,
+            checkStatus
           });
         });
       });
@@ -167,6 +169,7 @@ const VolunteersView = {
                     ${myAssignments.map(a => `
                       <div style="color: var(--navy-700); margin-bottom: 2px;">
                         &bull; <strong>${a.roleName}</strong> @ ${a.eventTitle.substring(0, 20)}...
+                        ${a.checkStatus === 'checked_in' ? '<span style="color: var(--status-green-solid); font-weight: 700;"> (✓ On Duty)</span>' : (a.checkStatus === 'missing' ? '<span style="color: var(--status-red-solid); font-weight: 700;"> (🚨 Missing)</span>' : '')}
                       </div>
                     `).join('')}
                   </div>

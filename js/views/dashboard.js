@@ -39,6 +39,9 @@ const DashboardView = {
           </p>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" style="border-color: rgba(239, 68, 68, 0.4); color: var(--status-red-solid);" onclick="AppRouter.navigate('operations')">
+            <span>🚨</span> Live Operations
+          </button>
           <button class="btn btn-secondary" onclick="AppRouter.navigate('copilot')">
             <span>🤖</span> AI Copilot
           </button>
@@ -177,7 +180,10 @@ const DashboardView = {
                           </span>
                         </td>
                         <td>
-                          <div style="display: flex; gap: 6px;">
+                          <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                            <button class="btn btn-secondary btn-sm" onclick="App.goToLiveOps('${ev.id}')" title="Open Live Event Operations Center">
+                              🚨 Live Ops
+                            </button>
                             <button class="btn btn-secondary btn-sm" onclick="App.goToEventStaffing('${ev.id}')">
                               Staffing
                             </button>
@@ -211,23 +217,32 @@ const DashboardView = {
                   <div style="font-size: 2rem; margin-bottom: 8px;">✅</div>
                   <p>All positions are fully staffed! No active alerts.</p>
                 </div>
-              ` : alerts.slice(0, 5).map(alt => `
-                <div class="alert-item ${alt.severity}">
-                  <div class="alert-top">
-                    <span class="alert-title">${alt.title}</span>
-                    <span class="badge ${alt.severity === 'urgent' ? 'badge-red' : (alt.severity === 'warning' ? 'badge-amber' : 'badge-green')}" style="font-size: 0.65rem;">
-                      ${alt.level}
-                    </span>
+              ` : alerts.slice(0, 5).map(alt => {
+                const isMissing = alt.level === "MISSING VOLUNTEER" || (alt.id && alt.id.includes("missing"));
+                return `
+                  <div class="alert-item ${alt.severity}">
+                    <div class="alert-top">
+                      <span class="alert-title">${alt.title}</span>
+                      <span class="badge ${alt.severity === 'urgent' ? 'badge-red' : (alt.severity === 'warning' ? 'badge-amber' : 'badge-green')}" style="font-size: 0.65rem;">
+                        ${alt.level}
+                      </span>
+                    </div>
+                    <span class="alert-event-tag">📌 ${alt.event} • ${alt.date}</span>
+                    <div class="alert-desc">${alt.message}</div>
+                    <div style="margin-top: 6px;">
+                      ${isMissing ? `
+                        <button class="btn btn-sm btn-secondary" style="padding: 4px 10px; font-size: 0.75rem; background: var(--status-red-bg); color: var(--status-red-solid); border-color: var(--status-red-border);" onclick="App.goToLiveOps('${alt.eventId}')">
+                          🚨 Resolve Incident in Live Ops &rarr;
+                        </button>
+                      ` : `
+                        <button class="btn btn-sm btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="App.goToEventStaffing('${alt.eventId}')">
+                          Fill Vacancy &rarr;
+                        </button>
+                      `}
+                    </div>
                   </div>
-                  <span class="alert-event-tag">📌 ${alt.event} • ${alt.date}</span>
-                  <div class="alert-desc">${alt.message}</div>
-                  <div style="margin-top: 6px;">
-                    <button class="btn btn-sm btn-secondary" style="padding: 4px 10px; font-size: 0.75rem;" onclick="App.goToEventStaffing('${alt.eventId}')">
-                      Fill Vacancy &rarr;
-                    </button>
-                  </div>
-                </div>
-              `).join('')}
+                `;
+              }).join('')}
             </div>
           </div>
         </div>

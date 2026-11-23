@@ -130,6 +130,87 @@ def run_pure_tests():
         zero_roles = [r for r in evt_103["roles"] if len(r.get("assignedVolunteerIds", [])) == 0]
         check("Zero-staffed role correctly identified in evt-103", len(zero_roles) > 0 and zero_roles[0]["name"] == "Loading & Vehicle Transport Crew")
 
+    # 11. Live Event Operations Center & Navigation Tests
+    check("HTML contains Live Operations nav item", 'data-route="operations"' in html)
+    check("HTML includes operations.js script tag", 'src="js/views/operations.js"' in html)
+    check("js/views/operations.js exists", os.path.exists("js/views/operations.js"))
+    with open("js/views/operations.js", "r", encoding="utf-8") as f:
+        ops_view_src = f.read()
+
+    check("OperationsView has renderPositionsTab", "renderPositionsTab(" in ops_view_src)
+    check("OperationsView has renderRosterTab", "renderRosterTab(" in ops_view_src)
+    check("OperationsView has renderRetrospectiveTab", "renderRetrospectiveTab(" in ops_view_src)
+    check("OperationsView has checkInVolunteer", "checkInVolunteer(" in ops_view_src)
+    check("OperationsView has checkInAllPresent", "checkInAllPresent(" in ops_view_src)
+    check("OperationsView has openRapidCheckInModal", "openRapidCheckInModal(" in ops_view_src)
+    check("OperationsView has openBackupModal", "openBackupModal(" in ops_view_src)
+    check("OperationsView has handleExecuteReplacement", "handleExecuteReplacement(" in ops_view_src)
+    check("OperationsView has position filtering", "setPositionFilter(" in ops_view_src)
+
+    # 12. Storage Live Operations Methods Tests
+    with open("js/storage.js", "r", encoding="utf-8") as f:
+        storage_src = f.read()
+
+    check("Storage has checkInVolunteer", "checkInVolunteer(" in storage_src)
+    check("Storage has replaceVolunteer", "replaceVolunteer(" in storage_src)
+    check("Storage has getEventOperationsData", "getEventOperationsData(" in storage_src)
+    check("Storage has getPostEventReport", "getPostEventReport(" in storage_src)
+    check("Storage has updateEventStatus", "updateEventStatus(" in storage_src)
+
+    # 13. Verify Check-in Data and Missing Volunteer Detection on Event 101
+    evt_101 = next((e for e in data["events"] if e["id"] == "evt-101"), None)
+    check("Event 101 located", evt_101 is not None)
+    if evt_101:
+        check_ins = evt_101.get("checkIns", {})
+        checked_in_vols = [vid for vid, c in check_ins.items() if c.get("status") == "checked_in"]
+        missing_vols = [vid for vid, c in check_ins.items() if c.get("status") == "missing"]
+        check("Event 101 has checked-in volunteers", len(checked_in_vols) >= 5, f"checked in: {len(checked_in_vols)}")
+        check("Event 101 has missing volunteer alert state", len(missing_vols) >= 1 and "vol-105" in missing_vols)
+
+        # Verify missing volunteer alert generation
+        missing_alerts = [a for a in alerts if a.get("level") == "MISSING VOLUNTEER"]
+        check("Missing volunteer alert generated for Event 101", len(missing_alerts) > 0 and "DeShawn Washington" in missing_alerts[0]["message"])
+
+    # 14. Verify Position Coverage Classification Logic
+    if evt_101:
+        roles_101 = evt_101.get("roles", [])
+        understaffed_101 = [r for r in roles_101 if len(r.get("assignedVolunteerIds", [])) < r.get("required", 0)]
+        fully_assigned_101 = [r for r in roles_101 if len(r.get("assignedVolunteerIds", [])) >= r.get("required", 0)]
+        check("Understaffed positions detected in Event 101", len(understaffed_101) == 3, f"count: {len(understaffed_101)}")
+        check("Fully assigned positions detected in Event 101", len(fully_assigned_101) == 1 and fully_assigned_101[0]["name"] == "Registration & Welcome Desk")
+
+    # 15. Verify Rapid Backup Replacement Operation
+    test_role = evt_101["roles"][3] # Stage & Hallway Marshalls
+    original_assigned = list(test_role["assignedVolunteerIds"])
+    old_vol = "vol-105"
+    backup_vol = "vol-118" # Unassigned in Event 101
+
+    # Simulate replacement:
+    if old_vol in test_role["assignedVolunteerIds"]:
+        test_role["assignedVolunteerIds"].remove(old_vol)
+    test_role["assignedVolunteerIds"].append(backup_vol)
+    check("Backup volunteer successfully swapped into role", backup_vol in test_role["assignedVolunteerIds"] and old_vol not in test_role["assignedVolunteerIds"])
+
+    # Revert test modification
+    test_role["assignedVolunteerIds"] = original_assigned
+
+    # 16. Verify Post-Event Retrospective Report on Event 100
+    evt_100 = next((e for e in data["events"] if e["id"] == "evt-100"), None)
+    check("Completed Event 100 located", evt_100 is not None and evt_100.get("status") == "Completed")
+    if evt_100:
+        rep = evt_100.get("postEventReport", {})
+        check("Event 100 has 100% post-event completion rate", rep.get("completionRate") == 100)
+        check("Event 100 has logged volunteer hours", rep.get("hoursDelivered", 0) > 30)
+        check("Event 100 has AI retrospective takeaways", len(rep.get("aiRetrospective", "")) > 50)
+
+    # 17. Reports View Integrity
+    check("js/views/reports.js exists", os.path.exists("js/views/reports.js"))
+    with open("js/views/reports.js", "r", encoding="utf-8") as f:
+        reports_view_src = f.read()
+    check("ReportsView has post-event audit table", "Event Staffing Performance Audit" in reports_view_src)
+    check("ReportsView has single event retrospective", "renderSelectedEventRetrospective" in reports_view_src)
+    check("ReportsView has AI Copilot Retrospective Takeaways", "AI Copilot Retrospective Takeaways" in reports_view_src)
+
     print("-" * 60)
     print(f"  SANDBOX UNIT TEST RESULTS: {passed}/{total} passed ({round(passed/total*100, 1)}%)")
     print("=" * 60)

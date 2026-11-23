@@ -47,6 +47,13 @@ const App = {
     AppRouter.navigate("staffing");
   },
 
+  goToLiveOps(eventId) {
+    if (eventId) {
+      OperationsView.selectedEventId = eventId;
+    }
+    AppRouter.navigate("operations");
+  },
+
   goToEventCopilot(eventId) {
     CopilotView.selectedEventId = eventId;
     CopilotView.draftPlan = null;

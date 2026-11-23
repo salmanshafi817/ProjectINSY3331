@@ -52,7 +52,49 @@ const GATHERLY_INITIAL_DATA = {
           assignedVolunteerIds: ["vol-105"],
           skillsRequired: ["Crowd Management", "Safety"]
         }
-      ]
+      ],
+      checkIns: {
+        "vol-102": {
+          status: "checked_in",
+          timestamp: "08:15 AM",
+          notes: "Stationed at Welcome & Check-in Desk A"
+        },
+        "vol-106": {
+          status: "checked_in",
+          timestamp: "08:24 AM",
+          notes: "Distributing symposium badges and schedules"
+        },
+        "vol-101": {
+          status: "checked_in",
+          timestamp: "08:30 AM",
+          notes: "Testing audio levels on auditorium stage"
+        },
+        "vol-107": {
+          status: "checked_in",
+          timestamp: "08:42 AM",
+          notes: "Keynote slide switcher configured"
+        },
+        "vol-104": {
+          status: "checked_in",
+          timestamp: "08:50 AM",
+          notes: "Guest speaker green room stocked"
+        },
+        "vol-108": {
+          status: "pending",
+          timestamp: null,
+          notes: "Shift starts at 09:00 AM"
+        },
+        "vol-115": {
+          status: "pending",
+          timestamp: null,
+          notes: "In transit to Nedderman Hall"
+        },
+        "vol-105": {
+          status: "missing",
+          timestamp: null,
+          notes: "Shift began at 08:30 AM - Not present at stage"
+        }
+      }
     },
     {
       id: "evt-102",
@@ -189,6 +231,61 @@ const GATHERLY_INITIAL_DATA = {
           skillsRequired: ["Heavy Lifting", "Cleanup"]
         }
       ]
+    },
+    {
+      id: "evt-100",
+      title: "Fall Orientation & Member Mixer",
+      category: "Social",
+      date: "2026-09-12",
+      time: "11:00 AM - 03:00 PM",
+      location: "Brazos Park & Student Lounge",
+      expectedAttendees: 220,
+      description: "Semester kickoff welcoming new AIS student members with project demos, networking breakout tables, and lunch.",
+      status: "Completed",
+      roles: [
+        {
+          id: "role-100-1",
+          name: "Check-in & Welcome Table",
+          required: 3,
+          assignedVolunteerIds: ["vol-102", "vol-106", "vol-112"],
+          skillsRequired: ["Check-in", "Customer Service"]
+        },
+        {
+          id: "role-100-2",
+          name: "Lunch & Refreshment Table",
+          required: 3,
+          assignedVolunteerIds: ["vol-110", "vol-116", "vol-117"],
+          skillsRequired: ["Food Logistics"]
+        },
+        {
+          id: "role-100-3",
+          name: "Sound & Music Setup",
+          required: 2,
+          assignedVolunteerIds: ["vol-101", "vol-107"],
+          skillsRequired: ["Audio/Visual"]
+        }
+      ],
+      checkIns: {
+        "vol-102": { status: "checked_in", timestamp: "10:30 AM", notes: "Completed 4.5 hrs" },
+        "vol-106": { status: "checked_in", timestamp: "10:35 AM", notes: "Completed 4.5 hrs" },
+        "vol-112": { status: "checked_in", timestamp: "10:45 AM", notes: "Completed 4.2 hrs" },
+        "vol-110": { status: "checked_in", timestamp: "10:40 AM", notes: "Completed 4.3 hrs" },
+        "vol-116": { status: "checked_in", timestamp: "10:42 AM", notes: "Completed 4.3 hrs" },
+        "vol-117": { status: "checked_in", timestamp: "10:50 AM", notes: "Completed 4.1 hrs" },
+        "vol-101": { status: "checked_in", timestamp: "10:15 AM", notes: "Completed 5.0 hrs" },
+        "vol-107": { status: "checked_in", timestamp: "10:20 AM", notes: "Completed 4.8 hrs" }
+      },
+      postEventReport: {
+        attendance: 235,
+        plannedSlots: 8,
+        actualStaffed: 8,
+        checkedInCount: 8,
+        completionRate: 100,
+        hoursDelivered: 35.7,
+        incidentsResolved: 1,
+        satisfactionScore: 9.6,
+        aiRetrospective: "Staffing ratio was exceptionally well balanced for Brazos Park foot traffic. Check-in lines were maintained below 2 minutes throughout peak rush. Recommend maintaining 3-person welcome desk for next year's orientation."
+      }
     }
   ],
   volunteers: [

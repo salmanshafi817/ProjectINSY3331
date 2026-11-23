@@ -65,6 +65,9 @@ const StaffingView = {
         </div>
 
         <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+          <button class="btn btn-secondary" onclick="App.goToLiveOps('${currentEvent.id}')" style="background: rgba(239, 68, 68, 0.15); color: #FCA5A5; border-color: rgba(239, 68, 68, 0.3);">
+            <span>🚨</span> Live Operations
+          </button>
           <button class="btn btn-primary" onclick="App.goToEventCopilot('${currentEvent.id}')" style="box-shadow: 0 2px 10px rgba(59, 130, 246, 0.4);">
             <span>🤖</span> Analyze with AI Copilot
           </button>
@@ -209,10 +212,23 @@ const StaffingView = {
                   <div class="assigned-volunteers-list">
                     ${assignedIds.map(vid => {
                       const v = volunteersMap[vid] || { name: "Unknown Volunteer", major: "Student" };
+                      const cIns = (currentEvent.checkIns || {})[vid];
+                      const isCheck = cIns?.status === "checked_in";
+                      const isMissing = cIns?.status === "missing";
+                      let checkDot = "";
+                      if (isCheck) {
+                        checkDot = `<span style="font-size: 0.65rem; background: var(--status-green-bg); color: var(--status-green-text); padding: 1px 5px; border-radius: 4px; font-weight: 700;">✓ Checked In</span>`;
+                      } else if (isMissing) {
+                        checkDot = `<span style="font-size: 0.65rem; background: var(--status-red-bg); color: var(--status-red-text); padding: 1px 5px; border-radius: 4px; font-weight: 700;">🚨 Missing</span>`;
+                      } else {
+                        checkDot = `<span style="font-size: 0.65rem; background: var(--bg-subtle); color: var(--navy-600); padding: 1px 5px; border-radius: 4px;">⏰ Awaiting</span>`;
+                      }
+
                       return `
                         <div class="assigned-vol-pill">
                           <span style="font-weight: 700; color: var(--blue-600);">${v.name}</span>
                           <span style="color: var(--text-muted); font-size: 0.75rem;">(${v.major})</span>
+                          ${checkDot}
                           <button 
                             class="unassign-btn" 
                             title="Remove volunteer from this role"
