@@ -52,6 +52,7 @@ const GatherlyStorage = {
     let totalAss = 0;
     
     events.forEach(ev => {
+      if (ev.status === "Canceled") return;
       (ev.roles || []).forEach(r => {
         const req = parseInt(r.required || 0);
         const ass = (r.assignedVolunteerIds || []).length;
@@ -79,6 +80,7 @@ const GatherlyStorage = {
     const alerts = [];
 
     events.forEach(ev => {
+      if (ev.status === "Canceled") return;
       const roles = ev.roles || [];
       const evReq = roles.reduce((sum, r) => sum + parseInt(r.required || 0), 0);
       const evAss = roles.reduce((sum, r) => sum + (r.assignedVolunteerIds || []).length, 0);
@@ -260,6 +262,113 @@ const GatherlyStorage = {
     return { success: true, event: newEvent };
   },
 
+  async cancelEvent(eventId, reason = "Canceled by organizer") {
+    if (await this.isServerAvailable()) {
+      try {
+        const res = await fetch("/api/events/cancel", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId, reason })
+        });
+        if (res.ok) {
+          const result = await res.json();
+          return { success: true, event: result.event, message: result.message };
+        }
+      } catch (e) {}
+    }
+
+    // Local fallback
+    const local = this.getLocalData();
+    const event = (local.events || []).find(e => e.id === eventId);
+    if (!event) return { success: false, error: "Event not found" };
+
+    event.previousStatus = event.status || "Upcoming";
+    event.status = "Canceled";
+    event.cancellationReason = reason;
+    event.canceledAt = new Date().toISOString();
+
+    this.saveLocalData(local);
+    return { success: true, event };
+  },
+
+  async restoreEvent(eventId) {
+    if (await this.isServerAvailable()) {
+      try {
+        const res = await fetch("/api/events/restore", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ eventId })
+        });
+        if (res.ok) {
+          const result = await res.json();
+          return { success: true, event: result.event, message: result.message };
+        }
+      } catch (e) {}
+    }
+
+    // Local fallback
+    const local = this.getLocalData();
+    const event = (local.events || []).find(e => e.id === eventId);
+    if (!event) return { success: false, error: "Event not found" };
+
+    const restoredStatus = event.previousStatus || "Upcoming";
+    event.status = restoredStatus === "Canceled" ? "Upcoming" : restoredStatus;
+    delete event.cancellationReason;
+    delete event.canceledAt;
+
+    this.saveLocalData(local);
+    return { success: true, event };
+  },
+
+  async rescheduleEvent(eventId, newDate, newTime, newLocation, reason = "Rescheduled by organizer") {
+    if (await this.isServerAvailable()) {
+      try {
+        const res = await fetch("/api/events/reschedule", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            eventId,
+            date: newDate,
+            time: newTime,
+            location: newLocation,
+            reason
+          })
+        });
+        if (res.ok) {
+          const result = await res.json();
+          return { success: true, event: result.event, message: result.message };
+        }
+      } catch (e) {}
+    }
+
+    // Local fallback
+    const local = this.getLocalData();
+    const event = (local.events || []).find(e => e.id === eventId);
+    if (!event) return { success: false, error: "Event not found" };
+
+    if (!event.rescheduledHistory) event.rescheduledHistory = [];
+    event.rescheduledHistory.push({
+      previousDate: event.date,
+      previousTime: event.time,
+      previousLocation: event.location,
+      reason,
+      rescheduledAt: new Date().toISOString()
+    });
+
+    event.date = newDate;
+    if (newTime) event.time = newTime;
+    if (newLocation) event.location = newLocation;
+
+    if (event.status === "Canceled") {
+      event.status = "Upcoming";
+      delete event.cancellationReason;
+      delete event.canceledAt;
+    }
+
+    this.saveLocalData(local);
+    return { success: true, event };
+  },
+
   async addVolunteer(volunteerPayload) {
     if (await this.isServerAvailable()) {
       try {
@@ -298,6 +407,99 @@ const GatherlyStorage = {
     local.volunteers.push(newVol);
     this.saveLocalData(local);
     return { success: true, volunteer: newVol };
+  },
+
+  async deleteVolunteer(volunteerId) {
+    let deletedVolunteer = null;
+    const assignments = [];
+
+    // Local DB manipulation
+    const local = this.getLocalData();
+    deletedVolunteer = (local.volunteers || []).find(v => v.id === volunteerId);
+    if (!deletedVolunteer) {
+      return { success: false, error: "Volunteer not found" };
+    }
+
+    // Unassign from any roles across all events
+    (local.events || []).forEach(ev => {
+      (ev.roles || []).forEach(r => {
+        if ((r.assignedVolunteerIds || []).includes(volunteerId)) {
+          r.assignedVolunteerIds = r.assignedVolunteerIds.filter(id => id !== volunteerId);
+          assignments.push({ eventId: ev.id, roleId: r.id });
+        }
+      });
+    });
+
+    local.volunteers = (local.volunteers || []).filter(v => v.id !== volunteerId);
+    this.saveLocalData(local);
+
+    if (await this.isServerAvailable()) {
+      try {
+        await fetch("/api/volunteers/delete", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ volunteerId })
+        });
+      } catch (e) {}
+    }
+
+    return {
+      success: true,
+      deletedBundle: {
+        volunteer: deletedVolunteer,
+        assignments: assignments
+      }
+    };
+  },
+
+  async restoreVolunteer(deletedBundle) {
+    if (!deletedBundle || !deletedBundle.volunteer) return { success: false, error: "Invalid restore bundle" };
+
+    const vol = deletedBundle.volunteer;
+    const assignments = deletedBundle.assignments || [];
+
+    const local = this.getLocalData();
+    if (!local.volunteers.some(v => v.id === vol.id)) {
+      local.volunteers.push(vol);
+    }
+
+    // Re-assign back to the roles they were on
+    assignments.forEach(a => {
+      const ev = (local.events || []).find(e => e.id === a.eventId);
+      if (ev) {
+        const role = (ev.roles || []).find(r => r.id === a.roleId);
+        if (role) {
+          role.assignedVolunteerIds = role.assignedVolunteerIds || [];
+          if (!role.assignedVolunteerIds.includes(vol.id)) {
+            role.assignedVolunteerIds.push(vol.id);
+          }
+        }
+      }
+    });
+
+    this.saveLocalData(local);
+
+    if (await this.isServerAvailable()) {
+      try {
+        await fetch("/api/volunteers/restore", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(deletedBundle)
+        });
+      } catch (e) {}
+    }
+
+    return { success: true, volunteer: vol };
+  },
+
+  async updateOrganization(orgPayload) {
+    const local = this.getLocalData();
+    local.organization = {
+      ...(local.organization || {}),
+      ...orgPayload
+    };
+    this.saveLocalData(local);
+    return { success: true, organization: local.organization };
   },
 
   async assignVolunteer(eventId, roleId, volunteerId) {

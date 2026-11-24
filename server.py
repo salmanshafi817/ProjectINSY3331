@@ -36,6 +36,8 @@ def calculate_stats(data):
     total_assigned = 0
     
     for ev in events:
+        if ev.get("status") == "Canceled":
+            continue
         for role in ev.get("roles", []):
             req = int(role.get("required", 0))
             ass = len(role.get("assignedVolunteerIds", []))
@@ -59,6 +61,8 @@ def generate_alerts(data):
     alerts = []
     
     for ev in events:
+        if ev.get("status") == "Canceled":
+            continue
         ev_title = ev.get("title")
         ev_date = ev.get("date")
         roles = ev.get("roles", [])
@@ -257,6 +261,102 @@ class GatherlyRequestHandler(http.server.SimpleHTTPRequestHandler):
             save_data(data)
             return self.send_json(201, {"message": "Event created successfully", "event": new_event})
 
+        # Cancel Event
+        elif path == "/api/events/cancel":
+            event_id = body.get("eventId")
+            reason = body.get("reason", "Canceled by organizer")
+            if not event_id:
+                return self.send_json(400, {"error": "eventId is required."})
+
+            event = next((e for e in data.get("events", []) if e.get("id") == event_id), None)
+            if not event:
+                return self.send_json(404, {"error": "Event not found."})
+
+            prev_status = event.get("status", "Upcoming")
+            event["previousStatus"] = prev_status
+            event["status"] = "Canceled"
+            event["cancellationReason"] = reason
+            event["canceledAt"] = datetime.now().isoformat()
+
+            save_data(data)
+            return self.send_json(200, {
+                "message": f"Event '{event.get('title')}' canceled successfully",
+                "event": event,
+                "stats": calculate_stats(data)
+            })
+
+        # Restore Canceled Event (Un-cancel / Undo)
+        elif path == "/api/events/restore":
+            event_id = body.get("eventId")
+            if not event_id:
+                return self.send_json(400, {"error": "eventId is required."})
+
+            event = next((e for e in data.get("events", []) if e.get("id") == event_id), None)
+            if not event:
+                return self.send_json(404, {"error": "Event not found."})
+
+            restored_status = event.get("previousStatus", "Upcoming")
+            if restored_status == "Canceled":
+                restored_status = "Upcoming"
+            event["status"] = restored_status
+            event.pop("canceledAt", None)
+            event.pop("cancellationReason", None)
+
+            save_data(data)
+            return self.send_json(200, {
+                "message": f"Event '{event.get('title')}' restored to {restored_status}",
+                "event": event,
+                "stats": calculate_stats(data)
+            })
+
+        # Reschedule Event
+        elif path == "/api/events/reschedule":
+            event_id = body.get("eventId")
+            new_date = body.get("date")
+            new_time = body.get("time")
+            new_location = body.get("location")
+            reason = body.get("reason", "Rescheduled by organizer")
+
+            if not event_id or not new_date:
+                return self.send_json(400, {"error": "eventId and new date are required."})
+
+            event = next((e for e in data.get("events", []) if e.get("id") == event_id), None)
+            if not event:
+                return self.send_json(404, {"error": "Event not found."})
+
+            old_date = event.get("date")
+            old_time = event.get("time")
+            old_location = event.get("location")
+
+            history = event.setdefault("rescheduledHistory", [])
+            history.append({
+                "previousDate": old_date,
+                "previousTime": old_time,
+                "previousLocation": old_location,
+                "reason": reason,
+                "rescheduledAt": datetime.now().isoformat()
+            })
+
+            event["date"] = new_date
+            if new_time:
+                event["time"] = new_time
+            if new_location:
+                event["location"] = new_location
+            
+            # If it was canceled and being rescheduled to a new date, reactivate it to Upcoming
+            if event.get("status") == "Canceled":
+                event["status"] = "Upcoming"
+                event.pop("canceledAt", None)
+                event.pop("cancellationReason", None)
+
+            save_data(data)
+            return self.send_json(200, {
+                "message": f"Event '{event.get('title')}' successfully rescheduled to {new_date}",
+                "event": event,
+                "stats": calculate_stats(data)
+            })
+
+
         # 2. Add Volunteer
         elif path == "/api/volunteers":
             name = body.get("name", "").strip()
@@ -283,6 +383,63 @@ class GatherlyRequestHandler(http.server.SimpleHTTPRequestHandler):
             data.setdefault("volunteers", []).append(new_vol)
             save_data(data)
             return self.send_json(201, {"message": "Volunteer registered successfully", "volunteer": new_vol})
+
+        # Delete Volunteer (with unassign)
+        elif path == "/api/volunteers/delete":
+            volunteer_id = body.get("volunteerId")
+            if not volunteer_id:
+                return self.send_json(400, {"error": "volunteerId is required."})
+            
+            volunteers = data.get("volunteers", [])
+            target = next((v for v in volunteers if v.get("id") == volunteer_id), None)
+            if not target:
+                return self.send_json(404, {"error": "Volunteer not found."})
+            
+            # Remove volunteer
+            data["volunteers"] = [v for v in volunteers if v.get("id") != volunteer_id]
+            
+            # Unassign from any roles
+            assignments = []
+            for ev in data.get("events", []):
+                for r in ev.get("roles", []):
+                    if volunteer_id in r.get("assignedVolunteerIds", []):
+                        r["assignedVolunteerIds"].remove(volunteer_id)
+                        assignments.append({"eventId": ev.get("id"), "roleId": r.get("id")})
+            
+            save_data(data)
+            return self.send_json(200, {
+                "message": "Volunteer deleted successfully",
+                "deletedVolunteer": target,
+                "assignments": assignments
+            })
+
+        # Restore Volunteer (Undo)
+        elif path == "/api/volunteers/restore":
+            vol = body.get("volunteer")
+            assignments = body.get("assignments", [])
+            if not vol or not vol.get("id"):
+                return self.send_json(400, {"error": "Valid volunteer object is required."})
+            
+            vol_id = vol.get("id")
+            # If not already present, restore
+            if not any(v.get("id") == vol_id for v in data.get("volunteers", [])):
+                data.setdefault("volunteers", []).append(vol)
+            
+            # Restore assignments
+            for a in assignments:
+                ev_id = a.get("eventId")
+                r_id = a.get("roleId")
+                ev = next((e for e in data.get("events", []) if e.get("id") == ev_id), None)
+                if ev:
+                    role = next((r for r in ev.get("roles", []) if r.get("id") == r_id), None)
+                    if role and vol_id not in role.setdefault("assignedVolunteerIds", []):
+                        role["assignedVolunteerIds"].append(vol_id)
+            
+            save_data(data)
+            return self.send_json(200, {
+                "message": "Volunteer restored successfully",
+                "volunteer": vol
+            })
 
         # 3. Assign Volunteer to Role
         elif path == "/api/staffing/assign":

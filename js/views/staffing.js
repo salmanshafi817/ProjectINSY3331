@@ -96,7 +96,7 @@ const StaffingView = {
             <div class="stat-icon blue">🎯</div>
           </div>
           <div class="stat-value">${totalRequired}</div>
-          <div class="stat-subtext">Total volunteer slots for event</div>
+          <div class="stat-subtext" style="color: #FFFFFF !important; font-weight: 600;">${totalRequired} volunteers needed for event</div>
         </div>
 
         <div class="stat-card">
@@ -105,7 +105,7 @@ const StaffingView = {
             <div class="stat-icon green">✅</div>
           </div>
           <div class="stat-value" style="color: var(--status-green-solid);">${totalAssigned}</div>
-          <div class="stat-subtext">Confirmed on roster</div>
+          <div class="stat-subtext" style="color: #CBD5E1;">Confirmed on roster</div>
         </div>
 
         <div class="stat-card">
@@ -116,7 +116,7 @@ const StaffingView = {
           <div class="stat-value" style="color: ${remainingOpenings > 0 ? 'var(--status-red-solid)' : 'var(--status-green-solid)'};">
             ${remainingOpenings}
           </div>
-          <div class="stat-subtext">Unfilled positions needing coverage</div>
+          <div class="stat-subtext" style="color: #FFFFFF !important; font-weight: 600;">${remainingOpenings > 0 ? `${remainingOpenings} volunteers needed` : 'All positions filled'}</div>
         </div>
 
         <div class="stat-card">
@@ -138,7 +138,7 @@ const StaffingView = {
 
       <!-- POSITIONS & ROLES ROSTER -->
       <div style="margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center;">
-        <h3 style="font-size: 1.2rem; font-weight: 700; color: var(--navy-900);">
+        <h3 style="font-size: 1.2rem; font-weight: 700; color: #FFFFFF !important;">
           Event Positions Breakdown (${roles.length} Roles)
         </h3>
       </div>
@@ -189,8 +189,8 @@ const StaffingView = {
                 </div>
 
                 <div style="text-align: right; min-width: 180px;">
-                  <div style="font-size: 0.9rem; font-weight: 700; color: var(--navy-900); margin-bottom: 4px;">
-                    ${ass} of ${req} Volunteers Assigned
+                  <div style="font-size: 0.9rem; font-weight: 700; color: #FFFFFF !important; margin-bottom: 4px;">
+                    ${ass} of ${req} Volunteers Assigned <span style="color: #FFFFFF !important; font-size: 0.8rem; font-weight: 600; text-shadow: 0 0 8px rgba(0,229,255,0.4);">(${req} volunteers needed)</span>
                   </div>
                   <div class="progress-container" style="height: 10px;">
                     <div class="progress-bar ${roleBar}" style="width: ${rolePct}%;"></div>
@@ -200,7 +200,7 @@ const StaffingView = {
 
               <!-- ASSIGNED VOLUNTEERS DISPLAY -->
               <div style="margin-top: 14px;">
-                <div style="font-size: 0.8rem; font-weight: 700; color: var(--navy-800); margin-bottom: 8px;">
+                <div style="font-size: 0.8rem; font-weight: 700; color: #FFFFFF !important; margin-bottom: 8px;">
                   Assigned Team Members (${ass}/${req}):
                 </div>
 

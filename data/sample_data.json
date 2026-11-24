@@ -9,6 +9,320 @@
   },
   "events": [
     {
+      "id": "evt-1795486545612",
+      "title": "Automated Test Leadership Gala",
+      "category": "Social",
+      "date": "2026-12-20",
+      "time": "02:00 PM - 06:00 PM",
+      "location": "Grand Ballroom West",
+      "expectedAttendees": 200,
+      "description": "Student organization event.",
+      "status": "In-Progress",
+      "roles": [
+        {
+          "id": "role-evt-1795486545612-1",
+          "name": "Welcome Host",
+          "required": 2,
+          "assignedVolunteerIds": [
+            "vol-102"
+          ],
+          "skillsRequired": [
+            "Greeter"
+          ]
+        },
+        {
+          "id": "role-evt-1795486545612-2",
+          "name": "Beverage Coordinator",
+          "required": 1,
+          "assignedVolunteerIds": [
+            "vol-101"
+          ],
+          "skillsRequired": [
+            "Food Logistics"
+          ]
+        }
+      ],
+      "checkIns": {
+        "vol-1795486545636": {
+          "status": "replaced",
+          "timestamp": null,
+          "notes": "Replaced by backup: Emergency swap",
+          "updatedAt": "2026-11-23T20:15:45.812099"
+        },
+        "vol-102": {
+          "status": "checked_in",
+          "timestamp": "08:15 PM",
+          "notes": "Emergency backup replacement for vol-1795486545636",
+          "updatedAt": "2026-11-23T20:15:45.812099"
+        }
+      },
+      "previousStatus": "In-Progress",
+      "rescheduledHistory": [
+        {
+          "previousDate": "2026-12-20",
+          "previousTime": "06:00 PM - 09:00 PM",
+          "previousLocation": "Alumni Pavilion",
+          "reason": "Date moved after finals",
+          "rescheduledAt": "2026-11-23T20:15:45.915741"
+        }
+      ]
+    },
+    {
+      "id": "evt-1795486102454",
+      "title": "Automated Test Leadership Gala",
+      "category": "Social",
+      "date": "2026-12-20",
+      "time": "02:00 PM - 06:00 PM",
+      "location": "Grand Ballroom West",
+      "expectedAttendees": 200,
+      "description": "Student organization event.",
+      "status": "In-Progress",
+      "roles": [
+        {
+          "id": "role-evt-1795486102454-1",
+          "name": "Welcome Host",
+          "required": 2,
+          "assignedVolunteerIds": [
+            "vol-102"
+          ],
+          "skillsRequired": [
+            "Greeter"
+          ]
+        },
+        {
+          "id": "role-evt-1795486102454-2",
+          "name": "Beverage Coordinator",
+          "required": 1,
+          "assignedVolunteerIds": [
+            "vol-101"
+          ],
+          "skillsRequired": [
+            "Food Logistics"
+          ]
+        }
+      ],
+      "checkIns": {
+        "vol-1795486102492": {
+          "status": "replaced",
+          "timestamp": null,
+          "notes": "Replaced by backup: Emergency swap",
+          "updatedAt": "2026-11-23T20:08:22.651281"
+        },
+        "vol-102": {
+          "status": "checked_in",
+          "timestamp": "08:08 PM",
+          "notes": "Emergency backup replacement for vol-1795486102492",
+          "updatedAt": "2026-11-23T20:08:22.651281"
+        }
+      },
+      "previousStatus": "In-Progress",
+      "rescheduledHistory": [
+        {
+          "previousDate": "2026-12-20",
+          "previousTime": "06:00 PM - 09:00 PM",
+          "previousLocation": "Alumni Pavilion",
+          "reason": "Date moved after finals",
+          "rescheduledAt": "2026-11-23T20:08:22.729454"
+        }
+      ]
+    },
+    {
+      "id": "evt-1795484889894",
+      "title": "Automated Test Leadership Gala",
+      "category": "Social",
+      "date": "2026-12-20",
+      "time": "06:00 PM - 09:00 PM",
+      "location": "Alumni Pavilion",
+      "expectedAttendees": 200,
+      "description": "Student organization event.",
+      "status": "In-Progress",
+      "roles": [
+        {
+          "id": "role-evt-1795484889894-1",
+          "name": "Welcome Host",
+          "required": 2,
+          "assignedVolunteerIds": [
+            "vol-102"
+          ],
+          "skillsRequired": [
+            "Greeter"
+          ]
+        },
+        {
+          "id": "role-evt-1795484889894-2",
+          "name": "Beverage Coordinator",
+          "required": 1,
+          "assignedVolunteerIds": [
+            "vol-101"
+          ],
+          "skillsRequired": [
+            "Food Logistics"
+          ]
+        }
+      ],
+      "checkIns": {
+        "vol-1795484889917": {
+          "status": "replaced",
+          "timestamp": null,
+          "notes": "Replaced by backup: Emergency swap",
+          "updatedAt": "2026-11-23T19:48:10.034701"
+        },
+        "vol-102": {
+          "status": "checked_in",
+          "timestamp": "07:48 PM",
+          "notes": "Emergency backup replacement for vol-1795484889917",
+          "updatedAt": "2026-11-23T19:48:10.034701"
+        }
+      }
+    },
+    {
+      "id": "evt-1795484180904",
+      "title": "Automated Test Leadership Gala",
+      "category": "Social",
+      "date": "2026-12-20",
+      "time": "06:00 PM - 09:00 PM",
+      "location": "Alumni Pavilion",
+      "expectedAttendees": 200,
+      "description": "Student organization event.",
+      "status": "In-Progress",
+      "roles": [
+        {
+          "id": "role-evt-1795484180904-1",
+          "name": "Welcome Host",
+          "required": 2,
+          "assignedVolunteerIds": [
+            "vol-102"
+          ],
+          "skillsRequired": [
+            "Greeter"
+          ]
+        },
+        {
+          "id": "role-evt-1795484180904-2",
+          "name": "Beverage Coordinator",
+          "required": 1,
+          "assignedVolunteerIds": [
+            "vol-101"
+          ],
+          "skillsRequired": [
+            "Food Logistics"
+          ]
+        }
+      ],
+      "checkIns": {
+        "vol-1795484180924": {
+          "status": "replaced",
+          "timestamp": null,
+          "notes": "Replaced by backup: Emergency swap",
+          "updatedAt": "2026-11-23T19:36:21.045688"
+        },
+        "vol-102": {
+          "status": "checked_in",
+          "timestamp": "07:36 PM",
+          "notes": "Emergency backup replacement for vol-1795484180924",
+          "updatedAt": "2026-11-23T19:36:21.045688"
+        }
+      }
+    },
+    {
+      "id": "evt-1795483851107",
+      "title": "Automated Test Leadership Gala",
+      "category": "Social",
+      "date": "2026-12-20",
+      "time": "06:00 PM - 09:00 PM",
+      "location": "Alumni Pavilion",
+      "expectedAttendees": 200,
+      "description": "Student organization event.",
+      "status": "In-Progress",
+      "roles": [
+        {
+          "id": "role-evt-1795483851107-1",
+          "name": "Welcome Host",
+          "required": 2,
+          "assignedVolunteerIds": [
+            "vol-102"
+          ],
+          "skillsRequired": [
+            "Greeter"
+          ]
+        },
+        {
+          "id": "role-evt-1795483851107-2",
+          "name": "Beverage Coordinator",
+          "required": 1,
+          "assignedVolunteerIds": [
+            "vol-101"
+          ],
+          "skillsRequired": [
+            "Food Logistics"
+          ]
+        }
+      ],
+      "checkIns": {
+        "vol-1795483851123": {
+          "status": "replaced",
+          "timestamp": null,
+          "notes": "Replaced by backup: Emergency swap",
+          "updatedAt": "2026-11-23T19:30:51.251673"
+        },
+        "vol-102": {
+          "status": "checked_in",
+          "timestamp": "07:30 PM",
+          "notes": "Emergency backup replacement for vol-1795483851123",
+          "updatedAt": "2026-11-23T19:30:51.251673"
+        }
+      }
+    },
+    {
+      "id": "evt-1795473555928",
+      "title": "Automated Test Leadership Gala",
+      "category": "Social",
+      "date": "2026-12-20",
+      "time": "06:00 PM - 09:00 PM",
+      "location": "Alumni Pavilion",
+      "expectedAttendees": 200,
+      "description": "Student organization event.",
+      "status": "In-Progress",
+      "roles": [
+        {
+          "id": "role-evt-1795473555928-1",
+          "name": "Welcome Host",
+          "required": 2,
+          "assignedVolunteerIds": [
+            "vol-102"
+          ],
+          "skillsRequired": [
+            "Greeter"
+          ]
+        },
+        {
+          "id": "role-evt-1795473555928-2",
+          "name": "Beverage Coordinator",
+          "required": 1,
+          "assignedVolunteerIds": [
+            "vol-101"
+          ],
+          "skillsRequired": [
+            "Food Logistics"
+          ]
+        }
+      ],
+      "checkIns": {
+        "vol-1795473555951": {
+          "status": "replaced",
+          "timestamp": null,
+          "notes": "Replaced by backup: Emergency swap",
+          "updatedAt": "2026-11-23T16:39:16.082142"
+        },
+        "vol-102": {
+          "status": "checked_in",
+          "timestamp": "04:39 PM",
+          "notes": "Emergency backup replacement for vol-1795473555951",
+          "updatedAt": "2026-11-23T16:39:16.082142"
+        }
+      }
+    },
+    {
       "id": "evt-1795413672714",
       "title": "Automated Test Leadership Gala",
       "category": "Social",
@@ -788,6 +1102,90 @@
     },
     {
       "id": "vol-1795413672740",
+      "name": "Alex Test Volunteer",
+      "email": "alex.test@student.uta.edu",
+      "phone": "(817) 555-0100",
+      "major": "Computer Science '26",
+      "skills": [
+        "Greeter",
+        "Customer Service"
+      ],
+      "availability": "Flexible",
+      "maxHoursPerWeek": 10,
+      "notes": ""
+    },
+    {
+      "id": "vol-1795473555951",
+      "name": "Alex Test Volunteer",
+      "email": "alex.test@student.uta.edu",
+      "phone": "(817) 555-0100",
+      "major": "Computer Science '26",
+      "skills": [
+        "Greeter",
+        "Customer Service"
+      ],
+      "availability": "Flexible",
+      "maxHoursPerWeek": 10,
+      "notes": ""
+    },
+    {
+      "id": "vol-1795483851123",
+      "name": "Alex Test Volunteer",
+      "email": "alex.test@student.uta.edu",
+      "phone": "(817) 555-0100",
+      "major": "Computer Science '26",
+      "skills": [
+        "Greeter",
+        "Customer Service"
+      ],
+      "availability": "Flexible",
+      "maxHoursPerWeek": 10,
+      "notes": ""
+    },
+    {
+      "id": "vol-1795484180924",
+      "name": "Alex Test Volunteer",
+      "email": "alex.test@student.uta.edu",
+      "phone": "(817) 555-0100",
+      "major": "Computer Science '26",
+      "skills": [
+        "Greeter",
+        "Customer Service"
+      ],
+      "availability": "Flexible",
+      "maxHoursPerWeek": 10,
+      "notes": ""
+    },
+    {
+      "id": "vol-1795484889917",
+      "name": "Alex Test Volunteer",
+      "email": "alex.test@student.uta.edu",
+      "phone": "(817) 555-0100",
+      "major": "Computer Science '26",
+      "skills": [
+        "Greeter",
+        "Customer Service"
+      ],
+      "availability": "Flexible",
+      "maxHoursPerWeek": 10,
+      "notes": ""
+    },
+    {
+      "id": "vol-1795486102492",
+      "name": "Alex Test Volunteer",
+      "email": "alex.test@student.uta.edu",
+      "phone": "(817) 555-0100",
+      "major": "Computer Science '26",
+      "skills": [
+        "Greeter",
+        "Customer Service"
+      ],
+      "availability": "Flexible",
+      "maxHoursPerWeek": 10,
+      "notes": ""
+    },
+    {
+      "id": "vol-1795486545636",
       "name": "Alex Test Volunteer",
       "email": "alex.test@student.uta.edu",
       "phone": "(817) 555-0100",

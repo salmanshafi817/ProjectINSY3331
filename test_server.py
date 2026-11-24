@@ -226,6 +226,39 @@ def run_tests():
             resp_status = urllib.request.urlopen(req_status)
             assert_test("POST /api/operations/event-status updates status", resp_status.status == 200)
 
+            # Test 16: POST /api/events/cancel (Cancel Event)
+            cancel_data = json.dumps({
+                "eventId": new_event_id,
+                "reason": "Severe Weather Warning"
+            }).encode("utf-8")
+            req_cancel = urllib.request.Request(f"{base_url}/api/events/cancel", data=cancel_data, headers={"Content-Type": "application/json"}, method="POST")
+            resp_cancel = urllib.request.urlopen(req_cancel)
+            cancel_json = json.loads(resp_cancel.read().decode("utf-8"))
+            assert_test("POST /api/events/cancel cancels event", resp_cancel.status == 200 and cancel_json["event"]["status"] == "Canceled")
+
+            # Test 17: POST /api/events/restore (Restore Canceled Event)
+            restore_data = json.dumps({
+                "eventId": new_event_id
+            }).encode("utf-8")
+            req_restore = urllib.request.Request(f"{base_url}/api/events/restore", data=restore_data, headers={"Content-Type": "application/json"}, method="POST")
+            resp_restore = urllib.request.urlopen(req_restore)
+            restore_json = json.loads(resp_restore.read().decode("utf-8"))
+            assert_test("POST /api/events/restore restores event", resp_restore.status == 200 and restore_json["event"]["status"] != "Canceled")
+
+            # Test 18: POST /api/events/reschedule (Reschedule Event)
+            reschedule_data = json.dumps({
+                "eventId": new_event_id,
+                "date": "2026-12-20",
+                "time": "02:00 PM - 06:00 PM",
+                "location": "Grand Ballroom West",
+                "reason": "Date moved after finals"
+            }).encode("utf-8")
+            req_reschedule = urllib.request.Request(f"{base_url}/api/events/reschedule", data=reschedule_data, headers={"Content-Type": "application/json"}, method="POST")
+            resp_reschedule = urllib.request.urlopen(req_reschedule)
+            reschedule_json = json.loads(resp_reschedule.read().decode("utf-8"))
+            assert_test("POST /api/events/reschedule reschedules event", resp_reschedule.status == 200 and reschedule_json["event"]["date"] == "2026-12-20")
+
+
         except Exception as e:
             assert_test("Assignment & Collision Workflow", False, str(e))
 

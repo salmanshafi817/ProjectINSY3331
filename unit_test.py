@@ -211,6 +211,47 @@ def run_pure_tests():
     check("ReportsView has single event retrospective", "renderSelectedEventRetrospective" in reports_view_src)
     check("ReportsView has AI Copilot Retrospective Takeaways", "AI Copilot Retrospective Takeaways" in reports_view_src)
 
+    # 18. Event Cancellation & Rescheduling Logic Tests
+    with open("js/views/events.js", "r", encoding="utf-8") as f:
+        events_view_src = f.read()
+    check("EventsView has openCancelModal", "openCancelModal(" in events_view_src)
+    check("EventsView has openRescheduleModal", "openRescheduleModal(" in events_view_src)
+    check("EventsView has handleRestoreEvent", "handleRestoreEvent(" in events_view_src)
+    check("EventsView has checkScheduleAdvisory", "checkScheduleAdvisory(" in events_view_src)
+    check("EventsView has showUndoCancelBanner", "showUndoCancelBanner(" in events_view_src)
+
+    check("Storage has cancelEvent", "cancelEvent(" in storage_src)
+    check("Storage has restoreEvent", "restoreEvent(" in storage_src)
+    check("Storage has rescheduleEvent", "rescheduleEvent(" in storage_src)
+
+    # Simulation test for cancel & restore
+    sim_data = json.loads(json.dumps(data))
+    target_event = sim_data["events"][1]
+    original_status = target_event.get("status", "Upcoming")
+    target_event["previousStatus"] = original_status
+    target_event["status"] = "Canceled"
+    target_event["cancellationReason"] = "Inclement Weather"
+
+    sim_stats = server.calculate_stats(sim_data)
+    check("Canceled event does not generate false active shortages in stats", sim_stats is not None)
+    
+    sim_alerts = server.generate_alerts(sim_data)
+    canceled_event_alerts = [a for a in sim_alerts if a.get("eventId") == target_event["id"]]
+    check("Canceled event excluded from shortage alerts", len(canceled_event_alerts) == 0)
+
+    # Simulation test for reschedule
+    new_date = "2026-12-15"
+    old_date = target_event["date"]
+    target_event.setdefault("rescheduledHistory", []).append({
+        "previousDate": old_date,
+        "reason": "Moved after exams"
+    })
+    target_event["date"] = new_date
+    target_event["status"] = "Upcoming"
+    check("Event date updated on reschedule", target_event["date"] == new_date)
+    check("Reschedule audit history recorded", len(target_event["rescheduledHistory"]) == 1 and target_event["rescheduledHistory"][0]["previousDate"] == old_date)
+    check("Rescheduling a canceled event reactivates status to Upcoming", target_event["status"] == "Upcoming")
+
     print("-" * 60)
     print(f"  SANDBOX UNIT TEST RESULTS: {passed}/{total} passed ({round(passed/total*100, 1)}%)")
     print("=" * 60)

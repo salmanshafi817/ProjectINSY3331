@@ -124,7 +124,7 @@ const OperationsView = {
             <div class="stat-icon blue">🎯</div>
           </div>
           <div class="stat-value">${summary.totalRequired}</div>
-          <div class="stat-subtext">Total volunteer slots needed</div>
+          <div class="stat-subtext" style="color: #FFFFFF !important; font-weight: 600;">Total volunteer slots needed</div>
         </div>
 
         <!-- Assigned on Roster -->
@@ -239,8 +239,8 @@ const OperationsView = {
                   <span class="badge badge-amber" style="font-size: 0.7rem; font-weight: 800;">⚠️ UNDERSTAFFED POSITION</span>
                   <strong style="color: var(--status-amber-text); font-size: 0.95rem;">${alt.role.name}</strong>
                 </div>
-                <div style="font-size: 0.825rem; color: var(--navy-800);">
-                  Currently <strong>${alt.assigned}</strong> of <strong>${alt.required}</strong> volunteers assigned (${alt.openSlots} open slot${alt.openSlots > 1 ? 's' : ''} remaining).
+                <div style="font-size: 0.825rem; color: #CBD5E1;">
+                  Currently <strong>${alt.assigned}</strong> of <strong style="color: #FFFFFF !important;">${alt.required} volunteers needed</strong> (${alt.openSlots} open slot${alt.openSlots > 1 ? 's' : ''} remaining).
                 </div>
                 <div style="font-size: 0.775rem; color: var(--text-muted); margin-top: 2px;">
                   Required Skills: <strong>${(alt.role.skillsRequired || ['General Staff']).join(', ')}</strong>
@@ -388,11 +388,11 @@ const OperationsView = {
               <div class="ops-role-card ${role.roleStatus}">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                   <div>
-                    <h4 style="font-size: 1.05rem; font-weight: 700; color: var(--navy-900); margin-bottom: 2px;">
+                    <h4 style="font-size: 1.05rem; font-weight: 700; color: #FFFFFF !important; margin-bottom: 2px;">
                       ${role.name}
                     </h4>
-                    <div style="font-size: 0.775rem; color: var(--text-muted);">
-                      Quota: <strong>${role.required} volunteers needed</strong>
+                    <div style="font-size: 0.8rem; color: #CBD5E1;">
+                      Quota: <strong style="color: #FFFFFF !important; font-weight: 700; text-shadow: 0 0 10px rgba(0, 229, 255, 0.3);">${role.required} volunteers needed</strong>
                     </div>
                   </div>
                   <span class="badge ${cardBadge}" style="font-size: 0.725rem;">
@@ -403,11 +403,11 @@ const OperationsView = {
                 <!-- PROGRESS BARS -->
                 <div style="margin: 10px 0 14px;">
                   <div style="display: flex; justify-content: space-between; font-size: 0.775rem; margin-bottom: 4px;">
-                    <span style="color: var(--navy-700);">
-                      Roster: <strong>${role.assignedCount}</strong> of ${role.required} (${pct}%)
+                    <span style="color: #CBD5E1;">
+                      Roster: <strong style="color: #FFFFFF !important;">${role.assignedCount}</strong> of ${role.required} (${pct}%)
                     </span>
-                    <span style="color: var(--navy-700);">
-                      Checked In: <strong>${role.checkedInCount}</strong> of ${role.assignedCount} (${checkPct}%)
+                    <span style="color: #CBD5E1;">
+                      Checked In: <strong style="color: #FFFFFF !important;">${role.checkedInCount}</strong> of ${role.assignedCount} (${checkPct}%)
                     </span>
                   </div>
                   <div class="progress-container" style="height: 6px;">

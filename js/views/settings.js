@@ -27,28 +27,34 @@ const SettingsView = {
           <div class="card-body">
             <div class="form-group">
               <label class="form-label">Student Organization Name</label>
-              <input type="text" class="form-control" value="${org.name || 'Association for Information Systems (AIS)'}" readonly />
+              <input type="text" id="setting-org-name" class="form-control" value="${org.name || 'Association for Information Systems (AIS)'}" />
             </div>
 
             <div class="form-group">
               <label class="form-label">Campus Chapter / Institution</label>
-              <input type="text" class="form-control" value="${org.campus || 'University Campus'}" readonly />
+              <input type="text" id="setting-org-campus" class="form-control" value="${org.campus || 'University Campus'}" />
             </div>
 
             <div class="form-row">
               <div class="form-group">
                 <label class="form-label">Officer In Charge</label>
-                <input type="text" class="form-control" value="${org.officerName || 'Alex Rivera'}" readonly />
+                <input type="text" id="setting-org-officer" class="form-control" value="${org.officerName || 'Alex Rivera'}" />
               </div>
               <div class="form-group">
                 <label class="form-label">Executive Role</label>
-                <input type="text" class="form-control" value="${org.officerRole || 'VP of Event Operations'}" readonly />
+                <input type="text" id="setting-org-role" class="form-control" value="${org.officerRole || 'VP of Event Operations'}" />
               </div>
             </div>
 
             <div class="form-group">
               <label class="form-label">Active Academic Term</label>
-              <input type="text" class="form-control" value="${org.term || 'Fall 2026'}" readonly />
+              <input type="text" id="setting-org-term" class="form-control" value="${org.term || 'Fall 2026'}" />
+            </div>
+
+            <div style="margin-top: 20px; display: flex; justify-content: flex-end;">
+              <button class="btn btn-primary" onclick="SettingsView.saveProfile()">
+                <span>💾</span> Save Organization Profile
+              </button>
             </div>
           </div>
         </div>
@@ -101,6 +107,32 @@ const SettingsView = {
         </div>
       </div>
     `;
+  },
+
+  async saveProfile() {
+    const name = document.getElementById("setting-org-name")?.value.trim() || "Association for Information Systems (AIS)";
+    const campus = document.getElementById("setting-org-campus")?.value.trim() || "University Campus";
+    const officerName = document.getElementById("setting-org-officer")?.value.trim() || "Alex Rivera";
+    const officerRole = document.getElementById("setting-org-role")?.value.trim() || "VP of Event Operations";
+    const term = document.getElementById("setting-org-term")?.value.trim() || "Fall 2026";
+
+    const payload = {
+      name,
+      campus,
+      officerName,
+      officerRole,
+      term
+    };
+
+    const res = await GatherlyStorage.updateOrganization(payload);
+    if (res.success) {
+      App.showToast("Organization profile updated successfully!", "success");
+      // Update topbar header if displayed
+      const orgNameEl = document.querySelector(".topbar-org");
+      if (orgNameEl) orgNameEl.textContent = name;
+    } else {
+      App.showToast(res.error || "Failed to update profile", "error");
+    }
   },
 
   async handleReset() {

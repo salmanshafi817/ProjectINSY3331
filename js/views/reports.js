@@ -56,7 +56,7 @@ const ReportsView = {
           </p>
         </div>
         <div style="display: flex; gap: 10px; flex-wrap: wrap;">
-          <button class="btn btn-secondary" onclick="App.showToast('Exporting summary metrics to CSV...', 'info')">
+          <button class="btn btn-secondary" onclick="ReportsView.exportCSV()">
             <span>📥</span> Export CSV Summary
           </button>
           <button class="btn btn-primary" onclick="App.goToLiveOps('${this.selectedEventId || ''}')">
@@ -351,5 +351,59 @@ const ReportsView = {
   async selectEvent(eventId) {
     this.selectedEventId = eventId;
     await AppRouter.refreshCurrentView();
+  },
+
+  async exportCSV() {
+    try {
+      const data = await GatherlyStorage.getAllData();
+      const events = data.events || [];
+      const volunteers = data.volunteers || [];
+      const volMap = {};
+      volunteers.forEach(v => volMap[v.id] = v);
+
+      const rows = [
+        ["Event Title", "Date", "Location", "Position", "Required Slots", "Assigned Slots", "Fulfillment Rate", "Assigned Volunteers", "Checked In Volunteers"]
+      ];
+
+      events.forEach(ev => {
+        const cIns = ev.checkIns || {};
+        (ev.roles || []).forEach(r => {
+          const req = parseInt(r.required || 0);
+          const assIds = r.assignedVolunteerIds || [];
+          const ass = assIds.length;
+          const fill = req > 0 ? Math.round((ass / req) * 100) : 100;
+          const volNames = assIds.map(id => volMap[id]?.name || id).join("; ");
+          const checkedInNames = assIds.filter(id => cIns[id]?.status === "checked_in").map(id => volMap[id]?.name || id).join("; ");
+
+          rows.push([
+            `"${ev.title.replace(/"/g, '""')}"`,
+            `"${ev.date}"`,
+            `"${ev.location.replace(/"/g, '""')}"`,
+            `"${r.name.replace(/"/g, '""')}"`,
+            req,
+            ass,
+            `"${fill}%"`,
+            `"${volNames.replace(/"/g, '""')}"`,
+            `"${checkedInNames.replace(/"/g, '""')}"`
+          ]);
+        });
+      });
+
+      const csvContent = rows.map(r => r.join(",")).join("\n");
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement("a");
+      link.setAttribute("href", url);
+      link.setAttribute("download", `gatherly_staffing_report_${new Date().toISOString().slice(0, 10)}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
+      App.showToast("Summary report exported to CSV successfully!", "success");
+    } catch (err) {
+      console.error("Export CSV error:", err);
+      App.showToast("Failed to generate CSV export", "error");
+    }
   }
 };
